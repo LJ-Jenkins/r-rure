@@ -1,0 +1,13 @@
+[package]
+name = "rurerlib"
+version = "0.1.0"
+authors = ["Luke Jenkins <luke-jenkins-dev@outlook.com>"]
+edition = "2021"
+
+[lib]
+crate-type = ["staticlib"]
+
+[dependencies]
+rure = "0.2.5"
+libc = { path = "../vendor/libc" }
+regex = { path = "../vendor/regex" }

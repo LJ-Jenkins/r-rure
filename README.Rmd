@@ -1,0 +1,111 @@
+---
+output: github_document
+---
+
+<!-- README.md is generated from README.Rmd. Please edit that file -->
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.path = "man/figures/README-",
+  out.width = "100%"
+)
+```
+
+# r-rure <img src="man/figures/logo.png" align="right" height="120" alt="" />
+
+<!-- badges: start -->
+<!-- badges: end -->
+
+(R-) rure provides high-performance regex operations using the Rust [Regex crate](https://crates.io/crates/regex) (through the [rure C API](https://github.com/rust-lang/regex/tree/master/regex-capi)).
+
+- **NOTE:** This package is in development and is subject to significant change.
+
+From the rure docs:
+
+* rure is a C API to Rust's regex library, which guarantees linear time searching using finite automata. In exchange, it must give up some common regex features such as backreferences and arbitrary lookaround. It does however include capturing groups, lazy matching, Unicode support and word boundary assertions. Its matching semantics generally correspond to Perl's, or "leftmost first." Namely, the match locations reported correspond to the first match that would be found by a backtracking engine.
+
+Regular expressions must be UTF-8 compliant and are determined to be so using Rust's `str::from_utf8()`. However, haystacks do not have to be UTF-8 compliant and no conversion to UTF-8 is performed. Whether invalid UTF-8 is matched or not depends on the regular expression - see the 'Text encoding' section of the [rure C API](https://github.com/rust-lang/regex/tree/master/regex-capi). Care must be taken to ensure expected behaviour.
+
+## Installation
+
+You can install the development version of rure like so:
+
+``` r
+# install.packages("pak")
+pak::pak("LJ-Jenkins/rure")
+```
+
+## Usage
+```{r example}
+library(rure)
+
+x <- c("apple", "banana", "cherry")
+```
+
+#### Detect regex matches
+```{r re example}
+re_detect(x, "a|b")
+re_find(x, "a|b")
+```
+
+#### Detect regex matches for a set of patterns
+```{r set example}
+re_set_detect(x, c("a|b", "c"))
+re_set_find(x, c("a|b", "c"))
+```
+
+#### Detect regex matches for each pattern in a set
+```{r set find each example}
+re_set_detect_each(x, c("a|b", "c"))
+re_set_find_each(x, c("a|b", "c"))
+```
+
+#### Escape regex metacharacters
+```{r escape example}
+x <- c(
+  ".", "+", "*", "?", "(", ")", "[", "]",
+  "{", "}", "|", "^", "$", "\\", "&", "-",
+  "~", "#"
+)
+re_escape(x)
+```
+
+## Benchmarks
+
+For illustration only, these are not meant to be comprehensive or definitive benchmarks.
+
+```{r bench setup}
+x <- rep(paste0(letters, letters), 100000)
+x_esc <- rep(c(
+  ".", "+", "*", "?", "(", ")", "[", "]",
+  "{", "}", "|", "^", "$", "\\"
+  # "&", "-", "~", "#" # stringr doesn't escape these
+), 100000)
+```
+
+```{r regex detect bench, echo = FALSE}
+bench::mark(
+  re_detect(x, "a|b|c"),
+  re_set_detect(x, c("a|b", "c")),
+  stringi::stri_detect_regex(x, "a|b|c"),
+  grepl("a|b|c", x)
+)[c("expression", "median")]
+```
+
+```{r regex find bench, echo = FALSE}
+bench::mark(
+  re_find(x, "a|b|c"),
+  re_set_find(x, c("a|b", "c")),
+  stringr::str_which(x, "a|b|c"),
+  grep("a|b|c", x)
+)[c("expression", "median")]
+```
+
+```{r regex escape bench, echo = FALSE}
+bench::mark(
+  re_escape(x_esc),
+  stringr::str_escape(x_esc)
+)[c("expression", "median")]
+```

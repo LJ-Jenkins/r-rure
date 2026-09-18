@@ -1,0 +1,11 @@
+Authors of vendored cargo crates
+ - aho-corasick 1.1.5: Andrew Gallant
+ - memchr 2.8.3: Andrew Gallant, bluss
+ - regex 1.13.1: The Rust Project Developers, Andrew Gallant
+ - regex 1.13.1: The Rust Project Developers, Andrew Gallant
+ - regex-automata 0.4.18: The Rust Project Developers, Andrew Gallant
+ - regex-syntax 0.8.11: The Rust Project Developers, Andrew Gallant
+ - rure 0.2.5: The Rust Project Developers
+ - rurerlib 0.1.0: Luke Jenkins
+
+(This file was auto-generated from 'cargo metadata' on 2026-09-18)

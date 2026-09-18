@@ -1,0 +1,15 @@
+Package: rure
+Title: Bindings to the 'Rust' 'regex' Crate Through the 'rure' C API
+Version: 0.0.0.9000
+Authors@R: c(
+    person("Luke", "Jenkins", , "luke-jenkins-dev@outlook.com", role = c("aut", "cre"), comment = c(ORCID = "0000-0002-7206-7242")),
+    person("Authors of the dependency Rust crates", role = "aut", comment = "see inst/AUTHORS file"))
+Description: Provides bindings to the 'Rust' 'regex' crate through the 'rure' C API, giving access to high-performance regular expression operations for 'UTF-8' compliant patterns. The 'regex' crate guarantees linear time searching using finite automata. In exchange, it does not include some common regex features such as backreferences and arbitrary lookaround. However, it does include capturing groups, lazy matching, 'Unicode' support and word boundary assertions. Matching semantics generally correspond to 'Perl', or "leftmost first". Namely, the match locations reported correspond to the first match that would be found by a backtracking engine.
+License: MIT + file LICENSE
+Encoding: UTF-8
+SystemRequirements: Cargo (Rust's package manager), rustc >= 1.92.0
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 8.0.0
+Suggests: 
+    testthat (>= 3.0.0)
+Config/testthat/edition: 3

@@ -1,0 +1,15 @@
+^.*\.Rproj$
+^\.Rproj\.user$
+^src/rurerlib/target
+^src/rurerlib/vendor/
+^src/\.cargo
+^src/vendor/
+\.lock$
+\.rs\.bk$
+^README.Rmd$
+^\.github$
+^LICENSE\.md$
+^CRAN-SUBMISSION$
+^CODE_OF_CONDUCT\.md$
+^\.Rhistory$
+^\.RData$

@@ -1,0 +1,16 @@
+TARGET = $(shell "$(R_HOME)/bin$(R_ARCH_BIN)/Rscript.exe" "../tools/rustarch.R")
+LIBDIR = rurerlib/target/$(TARGET)/release
+STATLIB = $(LIBDIR)/librurerlib.a
+PKG_CPPFLAGS = -DSTRICT_R_HEADERS -DR_NO_REMAP
+PKG_LIBS = -L$(LIBDIR) -lrurerlib -lws2_32 -ladvapi32 -lgdi32 -lbcrypt -lcrypt32 -luserenv -lntdll
+
+all: cleanup
+
+$(SHLIB): $(STATLIB)
+
+$(STATLIB):
+	if [ -f rurerlib/vendor.tar.xz ]; then tar xf rurerlib/vendor.tar.xz && mkdir -p .cargo && cp rurerlib/vendor-config.toml .cargo/config.toml; fi
+	PATH="$(USERPROFILE)\.cargo\bin:$(PATH)" cargo build --target=$(TARGET) --release --manifest-path=rurerlib/Cargo.toml
+
+cleanup: $(SHLIB)
+	@rm -Rf $(STATLIB) rurerlib/target

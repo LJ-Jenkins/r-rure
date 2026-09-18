@@ -1,0 +1,26 @@
+LIBDIR = rurerlib/target/release
+STATLIB = $(LIBDIR)/librurerlib.a
+PKG_CFLAGS = -pthread
+PKG_CPPFLAGS = -DSTRICT_R_HEADERS -DR_NO_REMAP
+PKG_LIBS = -L$(LIBDIR) -lrurerlib -pthread
+
+all: cleanup
+
+$(SHLIB): $(STATLIB)
+
+# CRAN policy forbids using $HOME so we build in the current working dir and
+# never use local cache. Also CRAN does not allow using more than 2 CPUs.
+# This makes things really slow because we have to reinstall all dependencies.
+# You can comment these things out if you do not submit to CRAN.
+CRANFLAGS=-j 2
+CARGOTMP=$(PWD)/.cargo
+export CARGO_HOME=$(CARGOTMP)
+
+$(STATLIB):
+	if [ -f rurerlib/vendor.tar.xz ]; then tar xf rurerlib/vendor.tar.xz && mkdir -p $(CARGOTMP) && cp rurerlib/vendor-config.toml $(CARGOTMP)/config.toml; fi
+	PATH="${PATH}:${HOME}/.cargo/bin" cargo build ${CRANFLAGS} --release --manifest-path=rurerlib/Cargo.toml
+	@rm -Rf $(CARGOTMP) vendor || true # CRAN wants us to remove "detritus"
+	@rm -Rf $(LIBDIR)/build || true
+
+cleanup: $(SHLIB)
+	@rm -Rf $(STATLIB) rurerlib/target
