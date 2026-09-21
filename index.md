@@ -1,0 +1,136 @@
+# r-rure
+
+(R-) rure provides high-performance regex operations using the Rust
+[Regex crate](https://crates.io/crates/regex) (through the [rure C
+API](https://github.com/rust-lang/regex/tree/master/regex-capi)).
+
+- **NOTE:** This package is in development and is subject to significant
+  change.
+
+From the rure docs:
+
+- rure is a C API to Rust’s regex library, which guarantees linear time
+  searching using finite automata. In exchange, it must give up some
+  common regex features such as backreferences and arbitrary lookaround.
+  It does however include capturing groups, lazy matching, Unicode
+  support and word boundary assertions. Its matching semantics generally
+  correspond to Perl’s, or “leftmost first.” Namely, the match locations
+  reported correspond to the first match that would be found by a
+  backtracking engine.
+
+Regular expressions must be UTF-8 compliant and are determined to be so
+using Rust’s `str::from_utf8()`. However, haystacks do not have to be
+UTF-8 compliant and no conversion to UTF-8 is performed. Whether invalid
+UTF-8 is matched or not depends on the regular expression - see the
+‘Text encoding’ section of the [rure C
+API](https://github.com/rust-lang/regex/tree/master/regex-capi). Care
+must be taken to ensure expected behaviour.
+
+## Installation
+
+You can install the development version of rure like so:
+
+``` r
+
+# install.packages("pak")
+pak::pak("LJ-Jenkins/rure")
+```
+
+## Usage
+
+``` r
+
+library(rure)
+
+x <- c("apple", "banana", "cherry")
+```
+
+#### Detect regex matches
+
+``` r
+
+re_detect(x, "a|b")
+#> [1]  TRUE  TRUE FALSE
+re_find(x, "a|b")
+#> [1] 1 2
+```
+
+#### Detect regex matches for a set of patterns
+
+``` r
+
+re_set_detect(x, c("a|b", "c"))
+#> [1] TRUE TRUE TRUE
+re_set_find(x, c("a|b", "c"))
+#> [1] 1 2 3
+```
+
+#### Detect regex matches for each pattern in a set
+
+``` r
+
+re_set_detect_each(x, c("a|b", "c"))
+#>       [,1]  [,2]
+#> [1,]  TRUE FALSE
+#> [2,]  TRUE FALSE
+#> [3,] FALSE  TRUE
+re_set_find_each(x, c("a|b", "c"))
+#> [[1]]
+#> [1] 1 2
+#> 
+#> [[2]]
+#> [1] 3
+```
+
+#### Escape regex metacharacters
+
+``` r
+
+x <- c(
+  ".", "+", "*", "?", "(", ")", "[", "]",
+  "{", "}", "|", "^", "$", "\\", "&", "-",
+  "~", "#"
+)
+re_escape(x)
+#>  [1] "\\."  "\\+"  "\\*"  "\\?"  "\\("  "\\)"  "\\["  "\\]"  "\\{"  "\\}" 
+#> [11] "\\|"  "\\^"  "\\$"  "\\\\" "\\&"  "\\-"  "\\~"  "\\#"
+```
+
+## Benchmarks
+
+For illustration only, these are not meant to be comprehensive or
+definitive benchmarks.
+
+``` r
+
+x <- rep(paste0(letters, letters), 100000)
+x_esc <- rep(c(
+  ".", "+", "*", "?", "(", ")", "[", "]",
+  "{", "}", "|", "^", "$", "\\"
+  # "&", "-", "~", "#" # stringr doesn't escape these
+), 100000)
+```
+
+``` R
+#> # A tibble: 4 × 2
+#>   expression                                   median
+#>   <bch:expr>                                 <bch:tm>
+#> 1 "re_detect(x, \"a|b|c\")"                    44.3ms
+#> 2 "re_set_detect(x, c(\"a|b\", \"c\"))"        57.3ms
+#> 3 "stringi::stri_detect_regex(x, \"a|b|c\")"  173.6ms
+#> 4 "grepl(\"a|b|c\", x)"                       147.3ms
+
+#> # A tibble: 4 × 2
+#>   expression                            median
+#>   <bch:expr>                          <bch:tm>
+#> 1 "re_find(x, \"a|b|c\")"               43.9ms
+#> 2 "re_set_find(x, c(\"a|b\", \"c\"))"   58.3ms
+#> 3 "stringr::str_which(x, \"a|b|c\")"   166.5ms
+#> 4 "grep(\"a|b|c\", x)"                 141.8ms
+
+#> # A tibble: 2 × 2
+#>   expression                   median
+#>   <bch:expr>                 <bch:tm>
+#> 1 re_escape(x_esc)              144ms
+#> 2 stringr::str_escape(x_esc)    275ms
+```
