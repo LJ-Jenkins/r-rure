@@ -1,456 +1,448 @@
-test_that("NA pattern is rejected", {
-  expect_error(re_find("abc", NA_character_))
-  expect_error(re_set_find("abc", NA_character_))
-  expect_error(re_set_find_each("abc", NA_character_))
-  expect_error(re_set_find("abc", c("a", NA)))
-  expect_error(re_set_find_each("abc", c("a", NA)))
+expected_mat <- function(start, end) {
+  m <- cbind(start = as.integer(start), end = as.integer(end))
+  dimnames(m) <- list(NULL, c("start", "end"))
+  m
+}
+
+test_that("re_find returns a 2-column integer matrix with correct dimnames", {
+  res <- re_find("apple", "ap")
+  expect_true(is.matrix(res))
+  expect_type(res, "integer")
+  expect_identical(dim(res), c(1L, 2L))
+  expect_identical(colnames(res), c("start", "end"))
+  expect_null(rownames(res))
 })
 
-test_that("empty pattern is rejected", {
-  expect_error(re_find("abc", ""))
-  expect_error(re_set_find("abc", ""))
-  expect_error(re_set_find_each("abc", ""))
-  expect_error(re_set_find("abc", c("a", "")))
-  expect_error(re_set_find_each("abc", c("a", "")))
-})
-
-test_that("NA in string is not matched", {
-  x <- c("abc", NA, "def")
-  expect_identical(re_find(x, "a"), 1L)
-  expect_identical(re_find(x, "e"), 3L)
-  expect_identical(re_set_find(x, c("a", "e")), c(1L, 3L))
+test_that("re_find finds a match at the start of a string", {
   expect_identical(
-    re_set_find_each(x, c("a", "e")),
-    list(1L, 3L)
+    re_find("apple", "ap"),
+    expected_mat(1L, 2L)
   )
 })
 
-test_that("empty input gives empty output", {
-  expect_identical(re_find(character(0), "a"), integer(0))
-  expect_identical(re_set_find(character(0), "a"), integer(0))
+test_that("re_find finds a match in the middle of a string", {
+  # "banana":  b a n a n a
+  #            1 2 3 4 5 6
+  # "an" first matches at positions 2-3
   expect_identical(
-    re_set_find_each(character(0), c("a", "b")),
-    list(integer(0), integer(0))
+    re_find("banana", "an"),
+    expected_mat(2L, 3L)
   )
 })
 
-test_that("non-character string errors", {
-  expect_error(re_find(1:3, "a"))
-  expect_error(re_find(TRUE, "a"))
-  expect_error(re_find(list("a"), "a"))
-  expect_error(re_set_find(1:3, "a"))
-  expect_error(re_set_find_each(1:3, "a"))
+test_that("re_find finds a match at the end of a string", {
+  expect_identical(
+    re_find("apple", "le"),
+    expected_mat(4L, 5L)
+  )
 })
 
-test_that("non-character pattern errors", {
-  expect_error(re_find("a", 1))
-  expect_error(re_find("a", TRUE))
-  expect_error(re_set_find("a", 1))
-  expect_error(re_set_find_each("a", 1))
+test_that("re_find finds the full string when pattern matches everything", {
+  expect_identical(
+    re_find("apple", ".*"),
+    expected_mat(1L, 5L)
+  )
 })
 
-test_that("pattern must be length 1 for re_find", {
-  expect_error(re_find("abc", c("a", "b")))
-  expect_error(re_find("abc", character(0)))
+test_that("re_find returns leftmost match, not longest", {
+  # "aaaa": leftmost match of "a+" is the whole run
+  expect_identical(
+    re_find("aaaa", "a+"),
+    expected_mat(1L, 4L)
+  )
+  # "aXaa": leftmost is the single "a" at position 1
+  expect_identical(
+    re_find("aXaa", "a+"),
+    expected_mat(1L, 1L)
+  )
 })
 
-test_that("patterns can be any length for set functions", {
-  expect_silent(re_set_find("abc", c("a", "b", "c")))
-  expect_silent(re_set_find("abc", "a"))
-  expect_silent(re_set_find_each("abc", c("a", "b", "c")))
-  # length-0 patterns should error (no meaningful output)
-  expect_error(re_set_find("abc", character(0)))
-  expect_error(re_set_find_each("abc", character(0)))
+# ---------------------------------------------------------------------------
+# No match
+# ---------------------------------------------------------------------------
+
+test_that("re_find returns NA for no match", {
+  expect_identical(
+    re_find("apple", "zzz"),
+    expected_mat(NA_integer_, NA_integer_)
+  )
 })
 
-test_that("invalid UTF-8 in string does not error", {
+test_that("re_find returns NA for empty input element with non-empty pattern", {
+  expect_identical(
+    re_find("", "a"),
+    expected_mat(NA_integer_, NA_integer_)
+  )
+})
+
+# ---------------------------------------------------------------------------
+# NA handling
+# ---------------------------------------------------------------------------
+
+test_that("re_find returns NA for NA_STRING elements", {
+  expect_identical(
+    re_find(NA_character_, "a"),
+    expected_mat(NA_integer_, NA_integer_)
+  )
+})
+
+test_that("re_find mixes real matches and NA elements", {
+  x <- c("apple", NA, "banana", NA)
+  res <- re_find(x, "an")
+  expect_identical(
+    res,
+    expected_mat(
+      start = c(NA_integer_, NA_integer_, 2L, NA_integer_),
+      end   = c(NA_integer_, NA_integer_, 3L, NA_integer_)
+    )
+  )
+})
+
+# ---------------------------------------------------------------------------
+# Vectorization
+# ---------------------------------------------------------------------------
+
+test_that("re_find is vectorized over string", {
+  fruit <- c("apple", "banana", "pear", "pineapple")
+  res <- re_find(fruit, "ap")
+  expect_identical(
+    res,
+    expected_mat(
+      start = c(1L, NA_integer_, NA_integer_, 5L),
+      end   = c(2L, NA_integer_, NA_integer_, 6L)
+    )
+  )
+})
+
+test_that("re_find preserves order and length of string", {
+  x <- c("zzz", "aaa", "mmm", "aaa")
+  res <- re_find(x, "a")
+  expect_identical(nrow(res), length(x))
+  expect_identical(res[, "start"], c(NA_integer_, 1L, NA_integer_, 1L))
+})
+
+# ---------------------------------------------------------------------------
+# Zero-length input
+# ---------------------------------------------------------------------------
+
+test_that("re_find returns a 0x2 matrix for empty character vector", {
+  res <- re_find(character(0), "a")
+  expect_true(is.matrix(res))
+  expect_type(res, "integer")
+  expect_identical(dim(res), c(0L, 2L))
+  expect_identical(colnames(res), c("start", "end"))
+  expect_null(rownames(res))
+})
+
+# ---------------------------------------------------------------------------
+# start argument
+# ---------------------------------------------------------------------------
+
+test_that("start = 1 is the default and equivalent to omitting it", {
+  expect_identical(
+    re_find("banana", "an"),
+    re_find("banana", "an", start = 1L)
+  )
+})
+
+test_that("start skips earlier matches", {
+  # "banana": first "a" at 2, next "a" at 4, next at 6
+  expect_identical(
+    re_find("banana", "a", start = 3L),
+    expected_mat(4L, 4L)
+  )
+})
+
+test_that("start at exactly the match position works", {
+  expect_identical(
+    re_find("banana", "a", start = 2L),
+    expected_mat(2L, 2L)
+  )
+})
+
+test_that("start beyond the only match returns NA", {
+  expect_identical(
+    re_find("apple", "ap", start = 2L),
+    expected_mat(NA_integer_, NA_integer_)
+  )
+})
+
+test_that("start equal to string length + 1 is allowed (empty tail)", {
+  # "apple" is length 5; start = 6 means search the empty tail.
+  # "a" cannot match the empty tail -> NA, no error/abort.
+  expect_identical(
+    re_find("apple", "a", start = 6L),
+    expected_mat(NA_integer_, NA_integer_)
+  )
+})
+
+test_that("start beyond string length returns NA, does not abort", {
+  # This is the critical regression test for the rure panic.
+  expect_identical(
+    re_find("apple", "a", start = 100L),
+    expected_mat(NA_integer_, NA_integer_)
+  )
+})
+
+test_that("start applies uniformly across all elements of string", {
+  x <- c("apple", "banana", "pear")
+  res <- re_find(x, "a", start = 2L)
+  expect_identical(
+    res,
+    expected_mat(
+      start = c(NA_integer_, 2L, 3L),
+      end   = c(NA_integer_, 2L, 3L)
+    )
+  )
+})
+
+test_that("start = 1 on empty string matches a pattern that can match empty", {
+  expect_identical(
+    re_find("", "a*", start = 1L),
+    expected_mat(1L, 0L) # rure gives start=0,end=0 -> R start=1,end=0
+  )
+})
+
+# ---------------------------------------------------------------------------
+# Anchors and lookbehind interact with start
+# ---------------------------------------------------------------------------
+
+test_that("\\A does not match when start > 1", {
+  expect_identical(
+    re_find("abc", "\\Aabc"),
+    expected_mat(1L, 3L)
+  )
+  expect_identical(
+    re_find("abc", "\\Aabc", start = 2L),
+    expected_mat(NA_integer_, NA_integer_)
+  )
+})
+
+test_that("^ (multiline off) behaves like \\A with respect to start", {
+  expect_identical(
+    re_find("abc", "^abc", start = 2L),
+    expected_mat(NA_integer_, NA_integer_)
+  )
+})
+
+test_that("$ matches at end of string regardless of start", {
+  expect_identical(
+    re_find("abc", "c$", start = 3L),
+    expected_mat(3L, 3L)
+  )
+})
+
+# ---------------------------------------------------------------------------
+# Empty-matching patterns
+# ---------------------------------------------------------------------------
+
+test_that("empty pattern errors", {
+  expect_error(re_find("", ""))
+})
+
+test_that("pattern that can match empty returns leftmost empty match", {
+  # "a*" on "bbb" matches empty at position 1
+  expect_identical(
+    re_find("bbb", "a*"),
+    expected_mat(1L, 0L)
+  )
+})
+
+# ---------------------------------------------------------------------------
+# Byte offsets for UTF-8 (documented semantics: offsets are in bytes)
+# ---------------------------------------------------------------------------
+
+test_that("re_find reports byte offsets for multibyte UTF-8", {
+  # "é" is 2 bytes in UTF-8; "café" is c(1) a(1) f(1) é(2) = 5 bytes
+  s <- "caf\u00e9"
+  # "é" starts at byte 4, ends at byte 5 (inclusive 1-based end = 5)
+  expect_identical(
+    re_find(s, "\u00e9"),
+    expected_mat(4L, 5L)
+  )
+})
+
+test_that("re_find offsets are byte-based even with leading multibyte chars", {
+  # "\u00e9x" -> bytes: é(2) x(1)
+  s <- "\u00e9x"
+  expect_identical(
+    re_find(s, "x"),
+    expected_mat(3L, 3L)
+  )
+})
+
+test_that("start is a byte offset for UTF-8", {
+  # "aé b": a(1) é(2) space(1) b(1) -> bytes: a=1, é=2-3, space=4, b=5
+  s <- "a\u00e9 b"
+  # start = 5 (byte) should find "b" at byte 5
+  expect_identical(
+    re_find(s, "b", start = 5L),
+    expected_mat(5L, 5L)
+  )
+  # start = 4 (byte, the space) should still find "b"
+  expect_identical(
+    re_find(s, "b", start = 4L),
+    expected_mat(5L, 5L)
+  )
+})
+
+# ---------------------------------------------------------------------------
+# Error handling: pattern
+# ---------------------------------------------------------------------------
+
+test_that("re_find errors on non-string pattern", {
+  expect_error(re_find("abc", 1L), "pattern")
+  expect_error(re_find("abc", TRUE), "pattern")
+})
+
+test_that("re_find errors on length != 1 pattern", {
+  expect_error(re_find("abc", c("a", "b")), "pattern")
+  expect_error(re_find("abc", character(0)), "pattern")
+})
+
+test_that("re_find errors on NA pattern", {
+  expect_error(re_find("abc", NA_character_), "pattern")
+})
+
+test_that("re_find errors on empty pattern", {
+  expect_error(re_find("abc", ""), "pattern")
+})
+
+test_that("re_find errors on invalid UTF-8 pattern", {
   bad <- rawToChar(as.raw(c(0xff, 0xfe)))
-  Encoding(bad) <- "unknown"
-  expect_no_error(re_find(bad, "a"))
-  expect_no_error(re_set_find(bad, "a"))
-  expect_no_error(re_set_find_each(bad, "a"))
-  expect_identical(re_find(bad, "\\xfe"), integer(0))
-  expect_identical(re_find(bad, "(?-u)\\xfe"), 1L)
-  expect_identical(re_set_find(bad, "(?-u)\\xfe"), 1L)
-  expect_identical(re_set_find_each(bad, "(?-u)\\xfe"), list(1L))
-})
-
-test_that("invalid UTF-8 in pattern errors", {
-  bad <- rawToChar(as.raw(c(0xff, 0xfe)))
-  Encoding(bad) <- "unknown"
   expect_error(re_find("abc", bad))
-  expect_error(re_set_find("abc", bad))
-  expect_error(re_set_find_each("abc", bad))
 })
 
-test_that("matching is locale-independent (Turkish i example)", {
-  # In a Turkish locale, toupper('i') == 'İ' and tolower('I') == 'ı'.
-  # Unicode *default* case folding:
-  # pairs i<->I and leaves İ (U+0130) and ı (U+0131) alone.
-  old <- Sys.getlocale("LC_CTYPE")
-  on.exit(Sys.setlocale("LC_CTYPE", old), add = TRUE)
-  try(Sys.setlocale("LC_CTYPE", "tr_TR.UTF-8"), silent = TRUE)
-
-  # Unicode default fold: i and I are equivalent under (?i)
-  expect_identical(re_find(c("i", "I"), "(?i)i"), c(1L, 2L))
-  expect_identical(re_find(c("i", "I"), "(?i)I"), c(1L, 2L))
-
-  # Turkish-specific pairings must NOT hold
-  expect_identical(re_find(c("İ", "ı"), "(?i)i"), integer(0))
-  expect_identical(re_find(c("İ", "ı"), "(?i)I"), integer(0))
+test_that("re_find errors on syntactically invalid regex", {
+  expect_error(re_find("abc", "("))
+  expect_error(re_find("abc", "[a-"))
 })
 
 # ---------------------------------------------------------------------------
-# Core find semantics
+# Error handling: string
 # ---------------------------------------------------------------------------
 
-test_that("re_find returns integer vector of indices", {
-  x <- c("apple", "banana", "pear", "pineapple")
-  out <- re_find(x, "a")
-  expect_type(out, "integer")
-  expect_length(out, 4L)
-  expect_identical(out, 1:4)
+test_that("re_find errors on non-character string", {
+  expect_error(re_find(1:3, "a"), "string")
+  expect_error(re_find(list("a"), "a"), "string")
 })
 
-test_that("re_find basic matching works", {
-  fruit <- c("apple", "banana", "pear", "pineapple")
-  expect_identical(re_find(fruit, "a"), 1:4)
-  expect_identical(re_find(fruit, "^a"), 1L)
-  expect_identical(re_find(fruit, "a$"), 2L)
-  expect_identical(re_find(fruit, "b"), 2L)
-  expect_identical(re_find(fruit, "[aeiou]"), 1:4)
+# ---------------------------------------------------------------------------
+# Error handling: start
+# ---------------------------------------------------------------------------
+
+test_that("re_find errors on non-integer start", {
+  expect_error(re_find("abc", "a", start = list(1)), "start")
 })
 
-test_that("re_find returns integer(0) when nothing matches", {
-  fruit <- c("apple", "banana", "pear", "pineapple")
-  expect_identical(re_find(fruit, "z"), integer(0))
-  expect_identical(re_find(fruit, "^z"), integer(0))
+test_that("re_find coerces start", {
+  expect_no_error(re_find("abc", "a", start = "1"))
 })
 
-test_that("re_set_find returns union of indices across patterns", {
-  fruit <- c("apple", "banana", "pear", "pineapple")
-  expect_identical(re_set_find(fruit, c("a", "e")), 1:4)
-  expect_identical(re_set_find(fruit, c("z", "q")), integer(0))
-  expect_identical(re_set_find(fruit, "z"), integer(0))
-  # Overlapping patterns shouldn't produce duplicated indices
-  expect_identical(re_set_find(fruit, c("a", "^a")), 1:4)
-  expect_identical(re_set_find(fruit, c("apple", "pear")), c(1L, 3L, 4L))
+test_that("re_find errors on length != 1 start", {
+  expect_error(re_find("abc", "a", start = c(1L, 2L)), "start")
 })
 
-test_that("re_set_find_each returns list of integer vectors, one per pattern", {
-  fruit <- c("apple", "banana", "pear", "pineapple")
-  out <- re_set_find_each(fruit, c("a", "^b"))
-  expect_type(out, "list")
-  expect_length(out, 2L)
-  expect_identical(out[[1]], 1:4)
-  expect_identical(out[[2]], 2L)
+test_that("re_find errors on NA start", {
+  expect_error(re_find("abc", "a", start = NA_integer_), "start")
 })
 
-test_that("re_set_find_each preserves order of patterns", {
-  fruit <- c("apple", "banana", "pear", "pineapple")
-  out <- re_set_find_each(fruit, c("z", "a", "b"))
-  expect_identical(out[[1]], integer(0))
-  expect_identical(out[[2]], 1:4)
-  expect_identical(out[[3]], 2L)
+test_that("re_find errors on start < 1", {
+  expect_error(re_find("abc", "a", start = 0L), "start")
+  expect_error(re_find("abc", "a", start = -1L), "start")
 })
 
-test_that("re_set_find agrees with union of re_set_find_each", {
-  fruit <- c("apple", "banana", "pear", "pineapple")
-  pats <- c("a", "e", "z")
+# ---------------------------------------------------------------------------
+# Attributes and structure
+# ---------------------------------------------------------------------------
+
+test_that("re_find result has no extra attributes beyond dim/dimnames", {
+  res <- re_find("apple", "ap")
   expect_identical(
-    re_set_find(fruit, pats),
-    sort(unique(unlist(re_set_find_each(fruit, pats))))
+    sort(names(attributes(res))),
+    c("dim", "dimnames")
   )
 })
 
-test_that("re_set_find_each elements are subsets of re_set_find", {
-  fruit <- c("apple", "banana", "pear", "pineapple")
-  pats <- c("a", "e", "z", "^a", "e$")
-  each <- re_set_find_each(fruit, pats)
-  union_idx <- re_set_find(fruit, pats)
-  for (idx in each) {
-    expect_true(all(idx %in% union_idx))
-  }
+test_that("re_find can be subset like a normal matrix", {
+  res <- re_find(c("apple", "banana"), "an")
+  expect_identical(res[, "start"], c(NA_integer_, 2L))
+  expect_identical(res[, "end"], c(NA_integer_, 3L))
+  expect_identical(res[1, ], c(start = NA_integer_, end = NA_integer_))
+})
+
+test_that("re_find result can be coerced to data.frame", {
+  res <- re_find(c("apple", "banana"), "an")
+  df <- as.data.frame(res)
+  expect_identical(names(df), c("start", "end"))
+  expect_identical(nrow(df), 2L)
 })
 
 # ---------------------------------------------------------------------------
-# Crate syntax: matching one character
+# Capturing groups do not change output (only whole-match span is returned)
 # ---------------------------------------------------------------------------
 
-test_that("dot matches any char except newline", {
-  expect_identical(re_find(c("a", "1", "\n"), "."), c(1L, 2L))
-})
-
-test_that("dot matches newline with s flag", {
-  expect_identical(re_find(c("\n", "a"), "(?s)."), c(1L, 2L))
-})
-
-test_that("digit classes", {
-  expect_identical(re_find(c("5", "a"), "\\d"), 1L)
-  expect_identical(re_find(c("5", "a"), "\\D"), 2L)
-  expect_identical(re_find(c("٥", "a"), "\\d"), 1L)
-})
-
-test_that("Unicode property classes", {
-  expect_identical(re_find(c("α", "a"), "\\p{Greek}"), 1L)
-  expect_identical(re_find(c("α", "a"), "\\P{Greek}"), 2L)
-})
-
-# ---------------------------------------------------------------------------
-# Character classes
-# ---------------------------------------------------------------------------
-
-test_that("simple character classes", {
-  expect_identical(re_find(c("x", "w"), "[xyz]"), 1L)
-  expect_identical(re_find(c("x", "w"), "[^xyz]"), 2L)
-  expect_identical(re_find(c("a", "1"), "[a-z]"), 1L)
-})
-
-test_that("ASCII character classes", {
-  expect_identical(re_find(c("a", "1"), "[[:alpha:]]"), 1L)
-  expect_identical(re_find(c("a", "1"), "[[:^alpha:]]"), 2L)
-  expect_identical(re_find(c("a", "1"), "[[:digit:]]"), 2L)
-  expect_identical(re_find(c("a", " "), "[[:space:]]"), 2L)
-})
-
-test_that("nested and set operations in character classes", {
-  expect_identical(re_find(c("x", "a"), "[a-y&&xyz]"), 1L)
-  expect_identical(re_find(c("5", "4"), "[0-9&&[^4]]"), 1L)
-  expect_identical(re_find(c("5", "4"), "[0-9--4]"), 1L)
-  expect_identical(re_find(c("a", "h", "b"), "[a-g~~b-h]"), c(1L, 2L))
-})
-
-test_that("named classes inside brackets", {
-  expect_identical(re_find(c("5", "a"), "[\\p{Greek}[:digit:]]"), 1L)
-  expect_identical(re_find(c("α", "5"), "[\\p{Greek}&&\\pL]"), 1L)
-})
-
-test_that("empty character class matches nothing", {
-  expect_identical(re_find(c("a", "b"), "[a&&b]"), integer(0))
-})
-
-# ---------------------------------------------------------------------------
-# Composites: concatenation and alternation
-# ---------------------------------------------------------------------------
-
-test_that("concatenation", {
-  expect_identical(re_find(c("ab", "ba"), "ab"), 1L)
-})
-
-test_that("alternation prefers first branch (both match, so both found)", {
-  expect_identical(re_find(c("samwise", "sam"), "samwise|sam"), c(1L, 2L))
-  expect_identical(re_find(c("samwise", "sam"), "sam|samwise"), c(1L, 2L))
-})
-
-# ---------------------------------------------------------------------------
-# Repetitions
-# ---------------------------------------------------------------------------
-
-test_that("greedy repetitions", {
-  expect_identical(re_find(c("", "aaa"), "a*"), c(1L, 2L))
-  expect_identical(re_find(c("", "aaa"), "a+"), 2L)
-  expect_identical(re_find(c("", "a"), "a?"), c(1L, 2L))
-})
-
-test_that("bounded repetitions", {
-  expect_identical(re_find(c("aa", "a"), "a{2}"), 1L)
-  expect_identical(re_find(c("aaa", "aaaa"), "a{1,3}"), c(1L, 2L))
-  expect_identical(re_find(c("a", ""), "a{1,}"), 1L)
-})
-
-test_that("lazy repetitions still find", {
-  # a*?, a?? can all match a non-empty string
-  expect_identical(re_find(c("aaa", "b"), "a*?"), c(1L, 2L))
-  expect_identical(re_find(c("aaa", "b"), "a+?"), 1L) # a+? requires >=1 'a'
-  expect_identical(re_find(c("a", "b"), "a??"), c(1L, 2L))
-})
-
-# ---------------------------------------------------------------------------
-# Empty matches and anchors
-# ---------------------------------------------------------------------------
-
-test_that("patterns that can match empty match all strings", {
-  expect_identical(re_find(c("", "abc"), "a*"), c(1L, 2L))
-})
-
-test_that("anchors", {
-  expect_identical(re_find(c("abc", "xabc"), "^abc"), 1L)
-  expect_identical(re_find(c("abc", "abcx"), "abc$"), 1L)
-  expect_identical(re_find(c("abc", "xabc"), "\\Aabc"), 1L)
-  expect_identical(re_find(c("abc", "abcx"), "abc\\z"), 1L)
-})
-
-test_that("word boundaries", {
-  expect_identical(re_find(c("abc", "abcdef"), "\\babc\\b"), 1L)
-  expect_identical(re_find(c("abc def", "abcdef"), "\\bdef\\b"), 1L)
-})
-
-test_that("start-of-word and end-of-word boundaries", {
-  expect_identical(re_find(c("abc", "xabc"), "\\b{start}abc"), 1L)
-  expect_identical(re_find(c("abc", "abcx"), "abc\\b{end}"), 1L)
-  expect_identical(re_find(c("abc", "xabc"), "\\b{start-half}abc"), 1L)
-  expect_identical(re_find(c("abc", "abcx"), "abc\\b{end-half}"), 1L)
-})
-
-# ---------------------------------------------------------------------------
-# Grouping and flags
-# ---------------------------------------------------------------------------
-
-test_that("non-capturing groups", {
-  expect_identical(re_find(c("abc", "xyz"), "(?:abc)"), 1L)
-  expect_identical(re_find(c("abcabc", "abc"), "(?:abc)+"), 1:2)
-})
-
-test_that("case-insensitive flag", {
-  expect_identical(re_find(c("ABC", "abc", "xyz"), "(?i)abc"), 1:2)
-  expect_identical(re_find(c("ABC", "abc"), "abc"), 2L)
-})
-
-test_that("multi-line flag", {
-  x <- c("line one\nline 2\n", "no match")
-  expect_identical(re_find(x, "(?m)^line \\d+"), 1L)
-  expect_identical(re_find(x, "^line \\d+"), integer(0))
-})
-
-test_that("dot-matches-newline flag", {
-  x <- c("a\nb", "axb", "ab")
-  # With s flag: dot matches newline, so both "a\nb" and "axb" match
-  expect_identical(re_find(x, "(?s)a.b"), c(1L, 2L))
-  # Without s flag: dot does not match newline, so only "axb" matches
-  expect_identical(re_find(x, "a.b"), 2L)
-})
-
-test_that("verbose flag", {
-  expect_identical(re_find(c("abc", "x"), "(?x) a b c"), 1L)
-  expect_identical(re_find(c("abc", "x"), "(?x) a  # comment\n b c"), 1L)
-})
-
-test_that("flags can toggle mid-pattern", {
-  expect_identical(re_find(c("AaAaAbb", "AaAaBbb"), "(?i)a+(?-i)b+"), 1L)
-})
-
-test_that("(?-u:...) makes \\b ASCII-only", {
-  # Unicode \b treats é as a word character, so there is NO boundary
-  # between f (word) and é (word) in "café"
-  expect_identical(re_find("café", "\\bé\\b"), integer(0))
-
-  # But a plain Unicode letter boundary works:
-  expect_identical(re_find("café", "\\b\\p{L}+\\b"), 1L)
-})
-
-test_that("(?-u:.) matches a single byte (bytes-mode regex)", {
-  # (?-u:.) is legal matches one byte. On "é" (C3 A9) it matches the first byte.
-  expect_identical(re_find("é", "(?-u:.)"), 1L)
-
-  # In Unicode mode, . matches the whole codepoint
-  expect_identical(re_find("é", "."), 1L)
-
-  # On an emoji (4 bytes), (?-u:.) still matches, and . also
-  # matches (one codepoint). Both are "does it match anywhere?".
-  expect_identical(re_find("💩", "(?-u:.)"), 1L)
-  expect_identical(re_find("💩", "."), 1L)
-})
-
-test_that("(?-u:...) affects boundaries, not Unicode letter classes", {
-  # ASCII \b at $/a is a boundary; \p{L}+ can match just "a"; the
-  # trailing ASCII \b between a and é (C3 = non-word) holds.
+test_that("capturing groups do not affect re_find output", {
   expect_identical(
-    re_find("$$aéé$$", "(?-u:\\b)\\p{L}+(?-u:\\b)"),
-    1L
+    re_find("banana", "(an)"),
+    re_find("banana", "an")
   )
-
-  # Same pattern on pure-ASCII "$$abc$$" matches too
   expect_identical(
-    re_find("$$abc$$", "(?-u:\\b)\\p{L}+(?-u:\\b)"),
-    1L
+    re_find("2024-01-15", "(\\d+)-(\\d+)-(\\d+)"),
+    expected_mat(1L, 10L)
   )
 })
 
-test_that("(?-u:...) affects only its group", {
-  # At position 0, both ASCII \b (start-of-string) and Unicode \b
-  # (start-of-string) hold, so the conjunction matches.
-  expect_identical(re_find("xé", "(?-u:\\b)\\b"), 1L)
-
-  # But they disagree at position 1:
-  #   ASCII \b sees x (word) -> C3 (non-word): boundary
-  #   Unicode \b sees x (word) -> é (word): no boundary
-  # So a pattern requiring both at position 1 fails there.
-  # The pattern still matches at position 0, hence 1L.
-  expect_identical(re_find("xé", "(?-u:\\b)\\b"), 1L)
-})
-
-test_that("(?-u:...) interacts correctly with other flags", {
-  # ASCII case folding
-  expect_identical(re_find("ABC", "(?i)(?-u:[a-z])"), 1L)
-
-  # É (U+00C9) folds to é (U+00E9), which is NOT in [a-z].
-  # So even with (?i), É does not match [a-z].
-  expect_identical(re_find("É", "(?i)[a-z]"), integer(0))
-  expect_identical(re_find("É", "(?i)(?-u:[a-z])"), integer(0))
-})
-
 # ---------------------------------------------------------------------------
-# Escape sequences
+# Alternation, character classes, quantifiers
 # ---------------------------------------------------------------------------
 
-test_that("literal escapes", {
-  expect_identical(re_find(c("*", "x"), "\\*"), 1L)
-  expect_identical(re_find(c(".", "x"), "\\."), 1L)
-  expect_identical(re_find(c("a", "b"), "\\x61"), 1L)
-  expect_identical(re_find(c("a", "b"), "\\u0061"), 1L)
-  expect_identical(re_find(c("a", "b"), "\\x{61}"), 1L)
-  expect_identical(re_find(c("a", "b"), "\\u{61}"), 1L)
-})
-
-test_that("control escapes", {
-  expect_identical(re_find(c("\t", "x"), "\\t"), 1L)
-  expect_identical(re_find(c("\n", "x"), "\\n"), 1L)
-  expect_identical(re_find(c("\r", "x"), "\\r"), 1L)
-  expect_identical(re_find(c("\a", "x"), "\\a"), 1L)
-  expect_identical(re_find(c("\f", "x"), "\\f"), 1L)
-  expect_identical(re_find(c("\v", "x"), "\\v"), 1L)
-})
-
-test_that("Perl character classes", {
-  expect_identical(re_find(c("_", "!", "5"), "\\w"), c(1L, 3L))
-  expect_identical(re_find(c(" ", "!"), "\\s"), 1L)
-  expect_identical(re_find(c(" ", "!"), "\\S"), 2L)
-})
-
-# ---------------------------------------------------------------------------
-# Edge cases
-# ---------------------------------------------------------------------------
-
-test_that("patterns that never match return integer(0)", {
-  expect_identical(re_find(c("a", "b"), "[a&&b]"), integer(0))
-})
-
-test_that("all-NA string returns integer(0)", {
-  x <- c(NA_character_, NA_character_)
-  expect_identical(re_find(x, "a"), integer(0))
-  expect_identical(re_set_find(x, c("a", "b")), integer(0))
+test_that("alternation returns leftmost of any alternative", {
+  # "cat" vs "dog" in "a dog and a cat": dog starts at 3
   expect_identical(
-    re_set_find_each(x, c("a", "b")),
-    list(integer(0), integer(0))
+    re_find("a dog and a cat", "dog|cat"),
+    expected_mat(3L, 5L)
   )
 })
 
-test_that("single-pattern character classes vs alternation are equivalent", {
-  x <- c("a", "b", "c", "d")
-  expect_identical(re_find(x, "[abc]"), re_set_find(x, c("a", "b", "c")))
+test_that("character classes work", {
+  expect_identical(
+    re_find("abc123", "[0-9]+"),
+    expected_mat(4L, 6L)
+  )
 })
 
-test_that("unicode input is handled correctly", {
-  expect_identical(re_find("café", "é"), 1L)
-  expect_identical(re_find("café", "\\p{L}"), 1L)
-  # 💩 is one codepoint; "." will match it
-  expect_identical(re_find("💩", "."), 1L)
-  # "." also matches a plain ASCII char
-  expect_identical(re_find("x", "."), 1L)
-  # \d is Unicode-aware
-  expect_identical(re_find("٣", "\\d"), 1L)
+test_that("greedy quantifier spans as much as possible from leftmost start", {
+  expect_identical(
+    re_find("aaabbb", "a+b+"),
+    expected_mat(1L, 6L)
+  )
 })
 
-test_that("anchors with unicode word boundaries", {
-  expect_identical(re_find(c("café", "xcafé"), "\\bcafé\\b"), 1L)
+# ---------------------------------------------------------------------------
+# Start at exact boundary of each element
+# ---------------------------------------------------------------------------
+
+test_that("start equal to byte length + 1 of each element never aborts", {
+  x <- c("a", "bb", "ccc")
+  expect_identical(
+    re_find(x, "a", start = 4L),
+    expected_mat(
+      start = c(NA_integer_, NA_integer_, NA_integer_),
+      end   = c(NA_integer_, NA_integer_, NA_integer_)
+    )
+  )
+})
+
+test_that("start valid for some elements, invalid for others", {
+  x <- c("a", "bb", "ccc")
+  # start = 3 -> valid for "ccc" (len 3), invalid for "a" (len 1), "bb" (len 2)
+  # searching from byte 3 of "ccc" means the tail "c"
+  expect_identical(
+    re_find(x, "c", start = 3L),
+    expected_mat(
+      start = c(NA_integer_, NA_integer_, 3L),
+      end   = c(NA_integer_, NA_integer_, 3L)
+    )
+  )
 })

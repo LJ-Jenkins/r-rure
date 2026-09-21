@@ -55,4 +55,19 @@ static inline pattern_set *check_string_and_pattern_set(SEXP string, SEXP patter
     return out;
 }
 
+static inline size_t check_start(SEXP start)
+{
+    if (Rf_xlength(start) != 1)
+        Rf_error("`start` must be a single number.");
+
+    int v = Rf_asInteger(start); // INTSXP or REALSXP; NA_INTEGER on failure
+    if (v == NA_INTEGER)
+        Rf_error("`start` must be a single non-NA number.");
+
+    if (v < 1)
+        Rf_error("`start` must be a positive number.");
+
+    return (size_t)(v - 1); // convert 1-based R index to 0-based offset
+}
+
 #endif

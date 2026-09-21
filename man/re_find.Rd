@@ -2,59 +2,44 @@
 % Please edit documentation in R/find.r
 \name{re_find}
 \alias{re_find}
-\alias{re_set_find}
-\alias{re_set_find_each}
-\title{Find regex matches}
+\title{Find locations of regex matches}
 \usage{
-re_find(string, pattern)
-
-re_set_find(string, patterns)
-
-re_set_find_each(string, patterns)
+re_find(string, pattern, start = 1L)
 }
 \arguments{
 \item{string}{Character vector.}
 
 \item{pattern}{Pattern to look for (single string).}
 
-\item{patterns}{Patterns to look for (character vector).}
+\item{start}{Byte offset at which to start searching (\code{1}-based).
+Default is \code{1} (start at the beginning of each string).}
 }
 \value{
-For \code{re_set_find()} and \code{re_set_find_each()}, an
-integer vector. For \code{re_set_find_each()}, a list the length
-of \code{patterns} with each element containing an integer vector.
+For \code{re_find()}, a (integer) matrix with two columns:
+\code{start} and \code{end}. Each row corresponds to an element of \code{string}
+and contains the \code{start} and \code{end} offsets of the match.
+If no match is found, the row contains \code{NA} values.
 }
 \description{
-Return the indices of elements in \code{string} that match
-regex patterns.
+Return the start and end offsets (in bytes)
+of regex matches within each element of \code{string}.
 }
 \details{
-\code{re_find()} returns the indices of elements in \code{string}
-that match \code{pattern}.
+\code{string} may contain arbitrary bytes but ASCII compatible
+text is more useful, and UTF-8 is more useful still. Other
+text encodings are not supported.
 
-\code{re_set_find()} does the same for a set of patterns,
-returning indices of elements in \code{string} where
-\strong{any} of the patterns match.
+No match will result in \code{NA} values in \code{start}
+and \code{end}. The same will occur for elements of \code{string} that
+are shorter than the specified \code{start} offset.
 
-\code{re_set_find_each()} returns a list of integer vectors,
-where each list element corresponds to a pattern in \code{patterns}
-and is filled with the indices of elements in \code{string}
-that match the corresponding pattern.
-
-No matches will result in an empty integer vector. For
-\code{re_set_find_each()}, this will result in a list of empty
-integer vectors.
+Patterns must be valid UTF-8 to work with Rust's regex engine.
+Any non-UTF-8 patterns will result in an error.
 }
 \examples{
 fruit <- c("apple", "banana", "pear", "pineapple")
-re_find(fruit, "a")
-re_find(fruit, "^a")
-re_find(fruit, "a$")
-re_find(fruit, "b")
-re_find(fruit, "[aeiou]")
-
-re_set_find(fruit, c("a", "e"))
-re_set_find_each(fruit, c("a", "e"))
+re_find(fruit, "ap")
+re_find(fruit, "ap", start = 2)
 }
 \seealso{
 \link{re_detect} for logical return values.

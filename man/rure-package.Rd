@@ -10,6 +10,15 @@
 
 Provides bindings to the 'Rust' 'regex' crate through the 'rure' C API, giving access to high-performance regular expression operations for 'UTF-8' compliant patterns. The 'regex' crate guarantees linear time searching using finite automata. In exchange, it does not include some common regex features such as backreferences and arbitrary lookaround. However, it does include capturing groups, lazy matching, 'Unicode' support and word boundary assertions. Matching semantics generally correspond to 'Perl', or "leftmost first". Namely, the match locations reported correspond to the first match that would be found by a backtracking engine.
 }
+\seealso{
+Useful links:
+\itemize{
+  \item \url{https://lj-jenkins.github.io/r-rure/}
+  \item \url{https://github.com/LJ-Jenkins/r-rure}
+  \item Report bugs at \url{https://github.com/LJ-Jenkins/r-rure/issues}
+}
+
+}
 \author{
 \strong{Maintainer}: Luke Jenkins \email{luke-jenkins-dev@outlook.com} (\href{https://orcid.org/0000-0002-7206-7242}{ORCID})
 

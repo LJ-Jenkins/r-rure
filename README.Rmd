@@ -18,7 +18,7 @@ knitr::opts_chunk$set(
 <!-- badges: start -->
 <!-- badges: end -->
 
-(R-) rure provides high-performance regex operations using the Rust [Regex crate](https://crates.io/crates/regex) (through the [rure C API](https://github.com/rust-lang/regex/tree/master/regex-capi)).
+(R-) rure provides high-performance regex operations using the Rust [regex crate](https://github.com/rust-lang/regex) (through the [rure C API](https://github.com/rust-lang/regex/tree/master/regex-capi)).
 
 - **NOTE:** This package is in development and is subject to significant change.
 
@@ -47,19 +47,25 @@ x <- c("apple", "banana", "cherry")
 #### Detect regex matches
 ```{r re example}
 re_detect(x, "a|b")
-re_find(x, "a|b")
+re_where(x, "a|b")
 ```
 
 #### Detect regex matches for a set of patterns
 ```{r set example}
 re_set_detect(x, c("a|b", "c"))
-re_set_find(x, c("a|b", "c"))
+re_set_where(x, c("a|b", "c"))
 ```
 
 #### Detect regex matches for each pattern in a set
-```{r set find each example}
+```{r set where each example}
 re_set_detect_each(x, c("a|b", "c"))
-re_set_find_each(x, c("a|b", "c"))
+re_set_where_each(x, c("a|b", "c"))
+```
+
+#### Find byte offsets of regex matches
+```{r find example}
+re_find(x, "an")
+re_find(x, "an", start = 3)
 ```
 
 #### Escape regex metacharacters
@@ -94,12 +100,19 @@ bench::mark(
 )[c("expression", "median")]
 ```
 
-```{r regex find bench, echo = FALSE}
+```{r regex where bench, echo = FALSE}
 bench::mark(
-  re_find(x, "a|b|c"),
-  re_set_find(x, c("a|b", "c")),
+  re_where(x, "a|b|c"),
+  re_set_where(x, c("a|b", "c")),
   stringr::str_which(x, "a|b|c"),
   grep("a|b|c", x)
+)[c("expression", "median")]
+```
+
+```{r regex find/locate bench, echo = FALSE}
+bench::mark(
+  re_find(x, "a"),
+  stringi::stri_locate_first_regex(x, "a")
 )[c("expression", "median")]
 ```
 
