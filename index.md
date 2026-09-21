@@ -1,7 +1,7 @@
 # r-rure
 
 (R-) rure provides high-performance regex operations using the Rust
-[Regex crate](https://crates.io/crates/regex) (through the [rure C
+[regex crate](https://github.com/rust-lang/regex) (through the [rure C
 API](https://github.com/rust-lang/regex/tree/master/regex-capi)).
 
 - **NOTE:** This package is in development and is subject to significant
@@ -51,7 +51,7 @@ x <- c("apple", "banana", "cherry")
 
 re_detect(x, "a|b")
 #> [1]  TRUE  TRUE FALSE
-re_find(x, "a|b")
+re_where(x, "a|b")
 #> [1] 1 2
 ```
 
@@ -61,7 +61,7 @@ re_find(x, "a|b")
 
 re_set_detect(x, c("a|b", "c"))
 #> [1] TRUE TRUE TRUE
-re_set_find(x, c("a|b", "c"))
+re_set_where(x, c("a|b", "c"))
 #> [1] 1 2 3
 ```
 
@@ -74,12 +74,28 @@ re_set_detect_each(x, c("a|b", "c"))
 #> [1,]  TRUE FALSE
 #> [2,]  TRUE FALSE
 #> [3,] FALSE  TRUE
-re_set_find_each(x, c("a|b", "c"))
+re_set_where_each(x, c("a|b", "c"))
 #> [[1]]
 #> [1] 1 2
 #> 
 #> [[2]]
 #> [1] 3
+```
+
+#### Find byte offsets of regex matches
+
+``` r
+
+re_find(x, "an")
+#>      start end
+#> [1,]    NA  NA
+#> [2,]     2   3
+#> [3,]    NA  NA
+re_find(x, "an", start = 3)
+#>      start end
+#> [1,]    NA  NA
+#> [2,]     4   5
+#> [3,]    NA  NA
 ```
 
 #### Escape regex metacharacters
@@ -115,22 +131,28 @@ x_esc <- rep(c(
 #> # A tibble: 4 × 2
 #>   expression                                   median
 #>   <bch:expr>                                 <bch:tm>
-#> 1 "re_detect(x, \"a|b|c\")"                    44.3ms
-#> 2 "re_set_detect(x, c(\"a|b\", \"c\"))"        57.3ms
-#> 3 "stringi::stri_detect_regex(x, \"a|b|c\")"  173.6ms
-#> 4 "grepl(\"a|b|c\", x)"                       147.3ms
+#> 1 "re_detect(x, \"a|b|c\")"                      89ms
+#> 2 "re_set_detect(x, c(\"a|b\", \"c\"))"         102ms
+#> 3 "stringi::stri_detect_regex(x, \"a|b|c\")"    233ms
+#> 4 "grepl(\"a|b|c\", x)"                         200ms
 
 #> # A tibble: 4 × 2
-#>   expression                            median
-#>   <bch:expr>                          <bch:tm>
-#> 1 "re_find(x, \"a|b|c\")"               43.9ms
-#> 2 "re_set_find(x, c(\"a|b\", \"c\"))"   58.3ms
-#> 3 "stringr::str_which(x, \"a|b|c\")"   166.5ms
-#> 4 "grep(\"a|b|c\", x)"                 141.8ms
+#>   expression                             median
+#>   <bch:expr>                           <bch:tm>
+#> 1 "re_where(x, \"a|b|c\")"                111ms
+#> 2 "re_set_where(x, c(\"a|b\", \"c\"))"    156ms
+#> 3 "stringr::str_which(x, \"a|b|c\")"      348ms
+#> 4 "grep(\"a|b|c\", x)"                    265ms
+
+#> # A tibble: 2 × 2
+#>   expression                                     median
+#>   <bch:expr>                                   <bch:tm>
+#> 1 "re_find(x, \"a\")"                             162ms
+#> 2 "stringi::stri_locate_first_regex(x, \"a\")"    378ms
 
 #> # A tibble: 2 × 2
 #>   expression                   median
 #>   <bch:expr>                 <bch:tm>
-#> 1 re_escape(x_esc)              144ms
-#> 2 stringr::str_escape(x_esc)    275ms
+#> 1 re_escape(x_esc)              218ms
+#> 2 stringr::str_escape(x_esc)    549ms
 ```

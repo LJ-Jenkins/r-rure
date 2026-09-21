@@ -1,15 +1,12 @@
-# Find regex matches
+# Find locations of regex matches
 
-Return the indices of elements in `string` that match regex patterns.
+Return the start and end offsets (in bytes) of regex matches within each
+element of `string`.
 
 ## Usage
 
 ``` r
-re_find(string, pattern)
-
-re_set_find(string, patterns)
-
-re_set_find_each(string, patterns)
+re_find(string, pattern, start = 1L)
 ```
 
 ## Arguments
@@ -22,31 +19,30 @@ re_set_find_each(string, patterns)
 
   Pattern to look for (single string).
 
-- patterns:
+- start:
 
-  Patterns to look for (character vector).
+  Byte offset at which to start searching (`1`-based). Default is `1`
+  (start at the beginning of each string).
 
 ## Value
 
-For `re_set_find()` and `re_set_find_each()`, an integer vector. For
-`re_set_find_each()`, a list the length of `patterns` with each element
-containing an integer vector.
+For `re_find()`, a (integer) matrix with two columns: `start` and `end`.
+Each row corresponds to an element of `string` and contains the `start`
+and `end` offsets of the match. If no match is found, the row contains
+`NA` values.
 
 ## Details
 
-`re_find()` returns the indices of elements in `string` that match
-`pattern`.
+`string` may contain arbitrary bytes but ASCII compatible text is more
+useful, and UTF-8 is more useful still. Other text encodings are not
+supported.
 
-`re_set_find()` does the same for a set of patterns, returning indices
-of elements in `string` where **any** of the patterns match.
+No match will result in `NA` values in `start` and `end`. The same will
+occur for elements of `string` that are shorter than the specified
+`start` offset.
 
-`re_set_find_each()` returns a list of integer vectors, where each list
-element corresponds to a pattern in `patterns` and is filled with the
-indices of elements in `string` that match the corresponding pattern.
-
-No matches will result in an empty integer vector. For
-`re_set_find_each()`, this will result in a list of empty integer
-vectors.
+Patterns must be valid UTF-8 to work with Rust's regex engine. Any
+non-UTF-8 patterns will result in an error.
 
 ## See also
 
@@ -57,24 +53,16 @@ for logical return values.
 
 ``` r
 fruit <- c("apple", "banana", "pear", "pineapple")
-re_find(fruit, "a")
-#> [1] 1 2 3 4
-re_find(fruit, "^a")
-#> [1] 1
-re_find(fruit, "a$")
-#> [1] 2
-re_find(fruit, "b")
-#> [1] 2
-re_find(fruit, "[aeiou]")
-#> [1] 1 2 3 4
-
-re_set_find(fruit, c("a", "e"))
-#> [1] 1 2 3 4
-re_set_find_each(fruit, c("a", "e"))
-#> [[1]]
-#> [1] 1 2 3 4
-#> 
-#> [[2]]
-#> [1] 1 3 4
-#> 
+re_find(fruit, "ap")
+#>      start end
+#> [1,]     1   2
+#> [2,]    NA  NA
+#> [3,]    NA  NA
+#> [4,]     5   6
+re_find(fruit, "ap", start = 2)
+#>      start end
+#> [1,]    NA  NA
+#> [2,]    NA  NA
+#> [3,]    NA  NA
+#> [4,]     5   6
 ```

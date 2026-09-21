@@ -11,6 +11,16 @@ correspond to 'Perl', or "leftmost first". Namely, the match locations
 reported correspond to the first match that would be found by a
 backtracking engine.
 
+## See also
+
+Useful links:
+
+- <https://lj-jenkins.github.io/r-rure/>
+
+- <https://github.com/LJ-Jenkins/r-rure>
+
+- Report bugs at <https://github.com/LJ-Jenkins/r-rure/issues>
+
 ## Author
 
 **Maintainer**: Luke Jenkins <luke-jenkins-dev@outlook.com>
