@@ -41,7 +41,7 @@ static void index_buffer_free(index_buffer *buf)
     buf->capacity = 0;
 }
 
-SEXP ffi_re_set_find_each(SEXP string, SEXP patterns)
+SEXP ffi_set_is_match_inds_each(SEXP string, SEXP patterns)
 {
     R_xlen_t np = Rf_xlength(patterns);
     pattern_set *pats = check_string_and_pattern_set(string, patterns, np);

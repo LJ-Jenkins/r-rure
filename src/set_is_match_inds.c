@@ -5,7 +5,7 @@
 #include "regex_compiler.h"
 #include "indices.h"
 
-SEXP ffi_re_set_find(SEXP string, SEXP patterns)
+SEXP ffi_set_is_match_inds(SEXP string, SEXP patterns)
 {
     R_xlen_t np = Rf_xlength(patterns);
     pattern_set *pats = check_string_and_pattern_set(string, patterns, np);

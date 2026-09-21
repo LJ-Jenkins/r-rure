@@ -4,7 +4,7 @@
 #include "argchecks.h"
 #include "regex_compiler.h"
 
-SEXP ffi_re_detect(SEXP string, SEXP pattern)
+SEXP ffi_is_match(SEXP string, SEXP pattern)
 {
     const char *pat = check_string_and_pattern(string, pattern);
 

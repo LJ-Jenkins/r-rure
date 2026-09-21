@@ -4,7 +4,7 @@
 #include "argchecks.h"
 #include "regex_compiler.h"
 
-SEXP ffi_re_set_detect(SEXP string, SEXP patterns)
+SEXP ffi_set_is_match(SEXP string, SEXP patterns)
 {
     R_xlen_t np = Rf_xlength(patterns);
     pattern_set *pats = check_string_and_pattern_set(string, patterns, np);

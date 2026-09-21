@@ -3,7 +3,7 @@
 #include "rure.h"
 #include "rurerlib/api.h"
 
-SEXP ffi_re_escape(SEXP string)
+SEXP ffi_escape(SEXP string)
 {
     if (TYPEOF(string) != STRSXP)
     {

@@ -38,17 +38,17 @@
 #' re_set_detect_each(fruit, c("a", "e"))
 #' @export
 re_detect <- function(string, pattern) {
-  .Call(ffi_re_detect, string, pattern)
+  .Call(ffi_is_match, string, pattern)
 }
 
 #' @rdname re_detect
 #' @export
 re_set_detect <- function(string, patterns) {
-  .Call(ffi_re_set_detect, string, patterns)
+  .Call(ffi_set_is_match, string, patterns)
 }
 
 #' @rdname re_detect
 #' @export
 re_set_detect_each <- function(string, patterns) {
-  .Call(ffi_re_set_detect_each, string, patterns)
+  .Call(ffi_set_is_match_each, string, patterns)
 }

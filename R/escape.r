@@ -14,5 +14,5 @@
 #' re_escape(".")
 #' @export
 re_escape <- function(string) {
-  .Call(ffi_re_escape, string)
+  .Call(ffi_escape, string)
 }

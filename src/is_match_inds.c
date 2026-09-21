@@ -5,7 +5,7 @@
 #include "regex_compiler.h"
 #include "indices.h"
 
-SEXP ffi_re_find(SEXP string, SEXP pattern)
+SEXP ffi_is_match_inds(SEXP string, SEXP pattern)
 {
     const char *pat = check_string_and_pattern(string, pattern);
 

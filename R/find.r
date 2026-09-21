@@ -37,17 +37,17 @@
 #' re_set_find_each(fruit, c("a", "e"))
 #' @export
 re_find <- function(string, pattern) {
-  .Call(ffi_re_find, string, pattern)
+  .Call(ffi_is_match_inds, string, pattern)
 }
 
 #' @rdname re_find
 #' @export
 re_set_find <- function(string, patterns) {
-  .Call(ffi_re_set_find, string, patterns)
+  .Call(ffi_set_is_match_inds, string, patterns)
 }
 
 #' @rdname re_find
 #' @export
 re_set_find_each <- function(string, patterns) {
-  .Call(ffi_re_set_find_each, string, patterns)
+  .Call(ffi_set_is_match_inds_each, string, patterns)
 }
