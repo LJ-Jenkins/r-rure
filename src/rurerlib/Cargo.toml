@@ -9,5 +9,5 @@ crate-type = ["staticlib"]
 
 [dependencies]
 rure = "0.2.5"
-libc = { path = "../vendor/libc" }
-regex = { path = "../vendor/regex" }
+libc = "0.2.189"
+regex = "1.13.1"
