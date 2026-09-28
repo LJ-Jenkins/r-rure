@@ -1,5 +1,5 @@
-#ifndef _ARGCHECKS_H
-#define _ARGCHECKS_H
+#ifndef _ARG_CHECKS_H
+#define _ARG_CHECKS_H
 
 #include <Rinternals.h>
 

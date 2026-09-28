@@ -1,11 +1,11 @@
 #include <Rinternals.h>
 #include <string.h>
 #include "rure.h"
-#include "argchecks.h"
+#include "arg_checks.h"
 #include "regex_compiler.h"
 #include "indices.h"
 
-SEXP ffi_is_match_inds(SEXP string, SEXP pattern)
+SEXP r_rure_is_match_inds(SEXP string, SEXP pattern)
 {
     const char *pat = check_string_and_pattern(string, pattern);
 
@@ -28,7 +28,7 @@ SEXP ffi_is_match_inds(SEXP string, SEXP pattern)
         int tf = rure_is_match(
             re,
             (const uint8_t *)s_p,
-            (size_t)strlen(s_p),
+            (size_t)Rf_length(s),
             0);
 
         if (tf)

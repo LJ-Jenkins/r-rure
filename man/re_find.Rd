@@ -2,9 +2,15 @@
 % Please edit documentation in R/find.r
 \name{re_find}
 \alias{re_find}
+\alias{re_find_captures}
+\alias{re_find_all}
 \title{Find locations of regex matches}
 \usage{
 re_find(string, pattern, start = 1L)
+
+re_find_captures(string, pattern, start = 1L)
+
+re_find_all(string, pattern, start = 1L)
 }
 \arguments{
 \item{string}{Character vector.}
@@ -18,29 +24,60 @@ Default is \code{1} (start at the beginning of each string).}
 For \code{re_find()}, a (integer) matrix with two columns:
 \code{start} and \code{end}. Each row corresponds to an element of \code{string}
 and contains the \code{start} and \code{end} offsets of the match.
-If no match is found, the row contains \code{NA} values.
+No match or \code{NA} string elements will result in \code{NA} values in both
+the \code{start} and \code{end} columns. The same will occur for elements of
+\code{string} that are shorter than the specified \code{start} offset.
+
+For \code{re_find_captures()}, a two-element list. The first element
+(\code{'matches'}) is the same as the output of \code{re_find()}. The second
+element (\code{'captures'}) is a list the length of the number of capture
+groups, with each element containing a matrix of the same
+structure described but for each capture group.
+
+For \code{re_find_all()}, a list the length of \code{string} with each element
+containing a matrix with \code{n} rows where \code{n} is the number of matches
+for that element of \code{string}. No matches will result in a matrix with
+a single row with \code{NA} values in both the \code{start} and \code{end} columns.
 }
 \description{
 Return the start and end offsets (in bytes)
 of regex matches within each element of \code{string}.
 }
 \details{
-\code{string} may contain arbitrary bytes but ASCII compatible
-text is more useful, and UTF-8 is more useful still. Other
-text encodings are not supported.
+\code{re_find()} returns the offset locations of the first match.
 
-No match will result in \code{NA} values in \code{start}
-and \code{end}. The same will occur for elements of \code{string} that
-are shorter than the specified \code{start} offset.
+\code{re_find_all()} returns the offset locations of all matches.
+
+\code{re_find_captures()} returns the offset locations of the first match
+as well as the offset locations of any capture groups for that match.
 
 Patterns must be valid UTF-8 to work with Rust's regex engine.
-Any non-UTF-8 patterns will result in an error.
+Any non-UTF-8 patterns will result in an error. \code{string} may contain
+arbitrary bytes but ASCII compatible text is more useful, and UTF-8
+is more useful still. Other text encodings are not supported.
+}
+\note{
+Patterns that can match the empty string (such as \code{"a*"}) will
+produce additional zero-length matches, including a trailing empty match
+at the end of each string. In the output this can manifest as a row
+where the \code{start} value is greater than the \code{end} value (often where the
+\code{end} value is \code{0}).
 }
 \examples{
 fruit <- c("apple", "banana", "pear", "pineapple")
 re_find(fruit, "ap")
 re_find(fruit, "ap", start = 2)
+
+# rure operates on bytes - results may not be what
+# you expect for multibyte characters.
+regexec("caf\u00e9", "caf\u00e9 caf\u00e9")
+re_find("caf\u00e9 caf\u00e9", "caf\u00e9")
+
+# 'zero'-length matches can occur
+re_find("bear", "a*")
 }
 \seealso{
-\link{re_detect} for logical return values.
+\link{re_detect} and \link{re_where} to return locations of vector element matches.
+
+\link{nbytes} to get the number of bytes in each string.
 }

@@ -20,12 +20,16 @@
 #' `NA` values in `string` will result in `NA` in the output.
 #'
 #' Patterns must be valid UTF-8 to work with Rust's regex engine.
-#' Any non-UTF-8 patterns will result in an error.
+#' Any non-UTF-8 patterns will result in an error. `string` may contain
+#' arbitrary bytes but ASCII compatible text is more useful, and UTF-8
+#' is more useful still. Other text encodings are not supported.
 #' @return For `re_detect()` and `re_set_detect()`, a logical
 #' vector the same length as `string`. For
 #' `re_set_detect_each()`, a logical matrix with one row per
 #' element of `string` and one column per pattern in `patterns`.
-#' @seealso [re_find] for index return values.
+#' @seealso
+#' [re_where] for index return values and [re_find] for match
+#' locations.
 #' @examples
 #' fruit <- c("apple", "banana", "pear", "pineapple")
 #' re_detect(fruit, "a")
@@ -38,17 +42,17 @@
 #' re_set_detect_each(fruit, c("a", "e"))
 #' @export
 re_detect <- function(string, pattern) {
-  .Call(ffi_is_match, string, pattern)
+  .Call(r_rure_is_match, string, pattern)
 }
 
 #' @rdname re_detect
 #' @export
 re_set_detect <- function(string, patterns) {
-  .Call(ffi_set_is_match, string, patterns)
+  .Call(r_rure_set_is_match, string, patterns)
 }
 
 #' @rdname re_detect
 #' @export
 re_set_detect_each <- function(string, patterns) {
-  .Call(ffi_set_is_match_each, string, patterns)
+  .Call(r_rure_set_is_match_each, string, patterns)
 }

@@ -2,46 +2,11 @@
 #include <R.h>
 #include <string.h>
 #include "rure.h"
-#include "argchecks.h"
+#include "arg_checks.h"
 #include "regex_compiler.h"
+#include "buffers.h"
 
-typedef struct
-{
-    R_xlen_t *data;
-    R_xlen_t size;
-    R_xlen_t capacity;
-} index_buffer;
-
-static void index_buffer_init(index_buffer *buf)
-{
-    buf->data = NULL;
-    buf->size = 0;
-    buf->capacity = 0;
-}
-
-static void index_buffer_push(index_buffer *buf, R_xlen_t value)
-{
-    if (buf->size == buf->capacity)
-    {
-        // init 16 slots; double thereafter.
-        R_xlen_t new_capacity = buf->capacity == 0 ? 16 : buf->capacity * 2;
-
-        buf->data = (R_xlen_t *)R_Realloc(buf->data, new_capacity, R_xlen_t);
-        buf->capacity = new_capacity;
-    }
-
-    buf->data[buf->size++] = value;
-}
-
-static void index_buffer_free(index_buffer *buf)
-{
-    // R_Free sets buf->data to NULL, see writing R ext 6.1.2.
-    R_Free(buf->data);
-    buf->size = 0;
-    buf->capacity = 0;
-}
-
-SEXP ffi_set_is_match_inds_each(SEXP string, SEXP patterns)
+SEXP r_rure_set_is_match_inds_each(SEXP string, SEXP patterns)
 {
     R_xlen_t np = Rf_xlength(patterns);
     pattern_set *pats = check_string_and_pattern_set(string, patterns, np);
@@ -78,7 +43,7 @@ SEXP ffi_set_is_match_inds_each(SEXP string, SEXP patterns)
         rure_set_matches(
             re,
             (const uint8_t *)s_p,
-            (size_t)strlen(s_p),
+            (size_t)Rf_length(s),
             0,
             m);
 

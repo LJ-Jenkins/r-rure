@@ -34,7 +34,7 @@ You can install the development version of rure like so:
 
 ``` r
 # install.packages("pak")
-pak::pak("LJ-Jenkins/rure")
+pak::pak("LJ-Jenkins/r-rure")
 ```
 
 ## Usage
@@ -66,6 +66,13 @@ re_set_where_each(x, c("a|b", "c"))
 ```{r find example}
 re_find(x, "an")
 re_find(x, "an", start = 3)
+re_find_all(x, "e|a")
+```
+
+#### Find byte offsets for capture groups
+```{r find captures example}
+x <- c("a=1;b=2", "c=3;d=4")
+re_find_captures(x, "(?<x>\\w+)=(?<y>\\w+)")
 ```
 
 #### Escape regex metacharacters
@@ -84,6 +91,7 @@ For illustration only, these are not meant to be comprehensive or definitive ben
 
 ```{r bench setup}
 x <- rep(paste0(letters, letters), 100000)
+x_cap <- rep(paste0(letters, "=", letters, ";", letters, "=", letters), 1000)
 x_esc <- rep(c(
   ".", "+", "*", "?", "(", ")", "[", "]",
   "{", "}", "|", "^", "$", "\\"
@@ -91,7 +99,7 @@ x_esc <- rep(c(
 ), 100000)
 ```
 
-```{r regex detect bench, echo = FALSE}
+```{r regex detect bench, echo = FALSE, cache=TRUE}
 bench::mark(
   re_detect(x, "a|b|c"),
   re_set_detect(x, c("a|b", "c")),
@@ -100,7 +108,7 @@ bench::mark(
 )[c("expression", "median")]
 ```
 
-```{r regex where bench, echo = FALSE}
+```{r regex where bench, echo = FALSE, cache=TRUE}
 bench::mark(
   re_where(x, "a|b|c"),
   re_set_where(x, c("a|b", "c")),
@@ -109,14 +117,30 @@ bench::mark(
 )[c("expression", "median")]
 ```
 
-```{r regex find/locate bench, echo = FALSE}
+```{r regex find/locate bench, echo = FALSE, cache=TRUE}
 bench::mark(
   re_find(x, "a"),
   stringi::stri_locate_first_regex(x, "a")
 )[c("expression", "median")]
 ```
 
-```{r regex escape bench, echo = FALSE}
+```{r regex find/locate captures bench, echo = FALSE, cache=TRUE}
+bench::mark(
+  re_find_captures(x_cap, "(?<x>\\w+)=(?<y>\\w+)"),
+  stringi::stri_locate_first_regex(x_cap, "(?<x>\\w+)=(?<y>\\w+)", capture_groups = TRUE),
+  check = FALSE
+)[c("expression", "median")]
+```
+
+```{r regex find/locate all bench, echo = FALSE, cache=TRUE}
+bench::mark(
+  re_find_all(x_cap, "a"),
+  stringi::stri_locate_all_regex(x_cap, "a"),
+  check = FALSE
+)[c("expression", "median")]
+```
+
+```{r regex escape bench, echo = FALSE, cache=TRUE}
 bench::mark(
   re_escape(x_esc),
   stringr::str_escape(x_esc)

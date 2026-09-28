@@ -44,7 +44,9 @@ in \code{patterns} - showing which patterns match each string.
 \code{NA} values in \code{string} will result in \code{NA} in the output.
 
 Patterns must be valid UTF-8 to work with Rust's regex engine.
-Any non-UTF-8 patterns will result in an error.
+Any non-UTF-8 patterns will result in an error. \code{string} may contain
+arbitrary bytes but ASCII compatible text is more useful, and UTF-8
+is more useful still. Other text encodings are not supported.
 }
 \examples{
 fruit <- c("apple", "banana", "pear", "pineapple")
@@ -58,5 +60,6 @@ re_set_detect(fruit, c("a", "e"))
 re_set_detect_each(fruit, c("a", "e"))
 }
 \seealso{
-\link{re_find} for index return values.
+\link{re_where} for index return values and \link{re_find} for match
+locations.
 }

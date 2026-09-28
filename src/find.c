@@ -1,11 +1,11 @@
 #include <Rinternals.h>
 #include <string.h>
 #include "rure.h"
-#include "argchecks.h"
+#include "arg_checks.h"
 #include "regex_compiler.h"
-#include "out_names.h"
+#include "matrix_fun.h"
 
-SEXP ffi_find(SEXP string, SEXP pattern, SEXP start)
+SEXP r_rure_find(SEXP string, SEXP pattern, SEXP start)
 {
     const char *pat = check_string_and_pattern(string, pattern);
     size_t start_off = check_start(start);
@@ -14,7 +14,7 @@ SEXP ffi_find(SEXP string, SEXP pattern, SEXP start)
     if (n == 0)
     {
         SEXP ans = PROTECT(Rf_allocMatrix(INTSXP, 0, 2));
-        ans = set_start_end_dimnames(ans);
+        set_start_end_dimnames(ans);
         UNPROTECT(1);
         return ans;
     }
@@ -38,7 +38,7 @@ SEXP ffi_find(SEXP string, SEXP pattern, SEXP start)
 
         const char *s_p = CHAR(s);
 
-        size_t s_sz = (size_t)strlen(s_p);
+        size_t s_sz = (size_t)Rf_length(s);
 
         if (s_sz < start_off)
         {
@@ -69,8 +69,7 @@ SEXP ffi_find(SEXP string, SEXP pattern, SEXP start)
     }
 
     rure_free(re);
-
-    ans = set_start_end_dimnames(ans);
+    set_start_end_dimnames(ans);
     UNPROTECT(1);
     return ans;
 }

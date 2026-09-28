@@ -1,10 +1,10 @@
 #include <Rinternals.h>
 #include <string.h>
 #include "rure.h"
-#include "argchecks.h"
+#include "arg_checks.h"
 #include "regex_compiler.h"
 
-SEXP ffi_set_is_match(SEXP string, SEXP patterns)
+SEXP r_rure_set_is_match(SEXP string, SEXP patterns)
 {
     R_xlen_t np = Rf_xlength(patterns);
     pattern_set *pats = check_string_and_pattern_set(string, patterns, np);
@@ -31,7 +31,7 @@ SEXP ffi_set_is_match(SEXP string, SEXP patterns)
         out[i] = rure_set_is_match(
             re,
             (const uint8_t *)s_p,
-            (size_t)strlen(s_p),
+            (size_t)Rf_length(s),
             0);
     }
 

@@ -1,9 +1,3 @@
-expected_mat <- function(start, end) {
-  m <- cbind(start = as.integer(start), end = as.integer(end))
-  dimnames(m) <- list(NULL, c("start", "end"))
-  m
-}
-
 test_that("re_find returns a 2-column integer matrix with correct dimnames", {
   res <- re_find("apple", "ap")
   expect_true(is.matrix(res))

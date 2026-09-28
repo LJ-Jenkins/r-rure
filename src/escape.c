@@ -3,7 +3,7 @@
 #include "rure.h"
 #include "rurerlib/api.h"
 
-SEXP ffi_escape(SEXP string)
+SEXP r_rure_escape(SEXP string)
 {
     if (TYPEOF(string) != STRSXP)
     {
@@ -30,7 +30,7 @@ SEXP ffi_escape(SEXP string)
 
         int status = rust_escape(
             (const uint8_t *)x,
-            (size_t)strlen(x),
+            (size_t)Rf_length(s),
             &result);
 
         if (status < 0)

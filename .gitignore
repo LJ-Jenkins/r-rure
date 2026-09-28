@@ -10,3 +10,4 @@ src/rurerlib/vendor.tar.xz
 src/rurerlib/vendor/*
 src/vendor/*
 docs
+README_cache/*
