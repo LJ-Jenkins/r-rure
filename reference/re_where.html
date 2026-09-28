@@ -85,11 +85,14 @@ that match the corresponding pattern.</p>
 <code>re_set_where_each()</code>, this will result in a list of empty
 integer vectors.</p>
 <p>Patterns must be valid UTF-8 to work with Rust's regex engine.
-Any non-UTF-8 patterns will result in an error.</p>
+Any non-UTF-8 patterns will result in an error. <code>string</code> may contain
+arbitrary bytes but ASCII compatible text is more useful, and UTF-8
+is more useful still. Other text encodings are not supported.</p>
     </div>
     <div class="section level2">
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>
-    <div class="dont-index"><p><a href="re_detect.html">re_detect</a> for logical return values.</p></div>
+    <div class="dont-index"><p><a href="re_detect.html">re_detect</a> for logical return values and <a href="re_find.html">re_find</a> for match
+locations.</p></div>
     </div>
 
     <div class="section level2">

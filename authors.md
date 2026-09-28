@@ -36,4 +36,4 @@ to the 'Rust' 'regex' Crate Through the 'rure' C API*. R package version
      - rure 0.2.5: The Rust Project Developers
      - rurerlib 0.1.0: Luke Jenkins
 
-    (This file was auto-generated from 'cargo metadata' on 2026-09-21)
+    (This file was auto-generated from 'cargo metadata' on 2026-09-28)

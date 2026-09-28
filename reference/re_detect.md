@@ -49,12 +49,16 @@ patterns match each string.
 `NA` values in `string` will result in `NA` in the output.
 
 Patterns must be valid UTF-8 to work with Rust's regex engine. Any
-non-UTF-8 patterns will result in an error.
+non-UTF-8 patterns will result in an error. `string` may contain
+arbitrary bytes but ASCII compatible text is more useful, and UTF-8 is
+more useful still. Other text encodings are not supported.
 
 ## See also
 
+[re_where](https://lj-jenkins.github.io/r-rure/reference/re_where.md)
+for index return values and
 [re_find](https://lj-jenkins.github.io/r-rure/reference/re_find.md) for
-index return values.
+match locations.
 
 ## Examples
 

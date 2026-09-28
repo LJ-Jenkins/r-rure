@@ -41,7 +41,11 @@ of regex matches within each element of <code>string</code>.</p>
 
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">re_find</span><span class="op">(</span><span class="va">string</span>, <span class="va">pattern</span>, start <span class="op">=</span> <span class="fl">1L</span><span class="op">)</span></span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">re_find</span><span class="op">(</span><span class="va">string</span>, <span class="va">pattern</span>, start <span class="op">=</span> <span class="fl">1L</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu">re_find_captures</span><span class="op">(</span><span class="va">string</span>, <span class="va">pattern</span>, start <span class="op">=</span> <span class="fl">1L</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu">re_find_all</span><span class="op">(</span><span class="va">string</span>, <span class="va">pattern</span>, start <span class="op">=</span> <span class="fl">1L</span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div class="section level2">
@@ -66,22 +70,42 @@ Default is <code>1</code> (start at the beginning of each string).</p></dd>
     <p>For <code>re_find()</code>, a (integer) matrix with two columns:
 <code>start</code> and <code>end</code>. Each row corresponds to an element of <code>string</code>
 and contains the <code>start</code> and <code>end</code> offsets of the match.
-If no match is found, the row contains <code>NA</code> values.</p>
+No match or <code>NA</code> string elements will result in <code>NA</code> values in both
+the <code>start</code> and <code>end</code> columns. The same will occur for elements of
+<code>string</code> that are shorter than the specified <code>start</code> offset.</p>
+<p>For <code>re_find_captures()</code>, a two-element list. The first element
+(<code>'matches'</code>) is the same as the output of <code>re_find()</code>. The second
+element (<code>'captures'</code>) is a list the length of the number of capture
+groups, with each element containing a matrix of the same
+structure described but for each capture group.</p>
+<p>For <code>re_find_all()</code>, a list the length of <code>string</code> with each element
+containing a matrix with <code>n</code> rows where <code>n</code> is the number of matches
+for that element of <code>string</code>. No matches will result in a matrix with
+a single row with <code>NA</code> values in both the <code>start</code> and <code>end</code> columns.</p>
     </div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
-    <p><code>string</code> may contain arbitrary bytes but ASCII compatible
-text is more useful, and UTF-8 is more useful still. Other
-text encodings are not supported.</p>
-<p>No match will result in <code>NA</code> values in <code>start</code>
-and <code>end</code>. The same will occur for elements of <code>string</code> that
-are shorter than the specified <code>start</code> offset.</p>
+    <p><code>re_find()</code> returns the offset locations of the first match.</p>
+<p><code>re_find_all()</code> returns the offset locations of all matches.</p>
+<p><code>re_find_captures()</code> returns the offset locations of the first match
+as well as the offset locations of any capture groups for that match.</p>
 <p>Patterns must be valid UTF-8 to work with Rust's regex engine.
-Any non-UTF-8 patterns will result in an error.</p>
+Any non-UTF-8 patterns will result in an error. <code>string</code> may contain
+arbitrary bytes but ASCII compatible text is more useful, and UTF-8
+is more useful still. Other text encodings are not supported.</p>
+    </div>
+    <div class="section level2">
+    <h2 id="note">Note<a class="anchor" aria-label="anchor" href="#note"></a></h2>
+    <p>Patterns that can match the empty string (such as <code>"a*"</code>) will
+produce additional zero-length matches, including a trailing empty match
+at the end of each string. In the output this can manifest as a row
+where the <code>start</code> value is greater than the <code>end</code> value (often where the
+<code>end</code> value is <code>0</code>).</p>
     </div>
     <div class="section level2">
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>
-    <div class="dont-index"><p><a href="re_detect.html">re_detect</a> for logical return values.</p></div>
+    <div class="dont-index"><p><a href="re_detect.html">re_detect</a> and <a href="re_where.html">re_where</a> to return locations of vector element matches.</p>
+<p><a href="nbytes.html">nbytes</a> to get the number of bytes in each string.</p></div>
     </div>
 
     <div class="section level2">
@@ -99,6 +123,23 @@ Any non-UTF-8 patterns will result in an error.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [2,]    NA  NA</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [3,]    NA  NA</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [4,]     5   6</span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># rure operates on bytes - results may not be what</span></span></span>
+<span class="r-in"><span><span class="co"># you expect for multibyte characters.</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/grep.html" class="external-link">regexec</a></span><span class="op">(</span><span class="st">"caf\u00e9"</span>, <span class="st">"caf\u00e9 caf\u00e9"</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [[1]]</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> attr(,"match.length")</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 4</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-in"><span><span class="fu">re_find</span><span class="op">(</span><span class="st">"caf\u00e9 caf\u00e9"</span>, <span class="st">"caf\u00e9"</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>      start end</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1,]     1   5</span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># 'zero'-length matches can occur</span></span></span>
+<span class="r-in"><span><span class="fu">re_find</span><span class="op">(</span><span class="st">"bear"</span>, <span class="st">"a*"</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>      start end</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1,]     1   0</span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

@@ -83,11 +83,14 @@ row per element of <code>string</code> and one column per pattern
 in <code>patterns</code> - showing which patterns match each string.</p>
 <p><code>NA</code> values in <code>string</code> will result in <code>NA</code> in the output.</p>
 <p>Patterns must be valid UTF-8 to work with Rust's regex engine.
-Any non-UTF-8 patterns will result in an error.</p>
+Any non-UTF-8 patterns will result in an error. <code>string</code> may contain
+arbitrary bytes but ASCII compatible text is more useful, and UTF-8
+is more useful still. Other text encodings are not supported.</p>
     </div>
     <div class="section level2">
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>
-    <div class="dont-index"><p><a href="re_find.html">re_find</a> for index return values.</p></div>
+    <div class="dont-index"><p><a href="re_where.html">re_where</a> for index return values and <a href="re_find.html">re_find</a> for match
+locations.</p></div>
     </div>
 
     <div class="section level2">
