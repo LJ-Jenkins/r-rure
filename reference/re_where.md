@@ -1,15 +1,15 @@
-# Find elements where regex match occurs
+# Find elements where a regex match occurs
 
 Return the indices of elements in `string` that match regex patterns.
 
 ## Usage
 
 ``` r
-re_where(string, pattern)
+re_where(string, pattern, start = 1L)
 
-re_set_where(string, patterns)
+re_set_where(string, patterns, start = 1L)
 
-re_set_where_each(string, patterns)
+re_set_where_each(string, patterns, start = 1L)
 ```
 
 ## Arguments
@@ -18,13 +18,19 @@ re_set_where_each(string, patterns)
 
   Character vector.
 
-- pattern:
+- pattern, patterns:
 
-  Pattern to look for (single string).
+  Pattern/s to look for. For more information see
+  [here](https://lj-jenkins.github.io/r-rure/reference/re_pattern.md).
 
-- patterns:
+- start:
 
-  Patterns to look for (character vector).
+  Byte offset at which to start searching (`1`-based). Default is `1`
+  (start at the beginning of each string). The regex engine may look at
+  bytes before the start position to determine match information. For
+  example, if the start position is greater than `1`, then the `"\\A"`
+  ("begin text") anchor can never match. For more information see
+  [here](https://lj-jenkins.github.io/r-rure/reference/re_start.md).
 
 ## Value
 
@@ -52,6 +58,19 @@ Patterns must be valid UTF-8 to work with Rust's regex engine. Any
 non-UTF-8 patterns will result in an error. `string` may contain
 arbitrary bytes but ASCII compatible text is more useful, and UTF-8 is
 more useful still. Other text encodings are not supported.
+
+`re_where()` uses `rure_shortest_match` internally, which is faster on
+short strings than `rure_is_match`. The two return identical results.
+The set functions (`re_set_where()`, and `re_set_where_each()`) use
+`rure_set_is_match`, because `rure` does not expose a shortest-match
+variant for sets.
+
+## Note
+
+Patterns that can match the empty string (such as `"a*"`) return the
+index for every element of `string`, since a zero-length match occurs at
+the start of every string. Zero-length matches are treated as valid
+matches.
 
 ## See also
 
@@ -84,4 +103,14 @@ re_set_where_each(fruit, c("a", "e"))
 #> [[2]]
 #> [1] 1 3 4
 #> 
+
+# Zero-length matches count as matches
+re_where(c("bear", "cat", ""), "a*") # all indexes
+#> [1] 1 2 3
+
+# Out-of-range start yields FALSE, even for patterns that match empty
+# strings. Here start = 5 lands on the empty suffix for "bear" (4 bytes),
+# but is out of range for "cat" (3 bytes) and "" (0 bytes).
+re_where(c("bear", "cat", ""), "a*", start = 5L) # only 1L
+#> [1] 1
 ```

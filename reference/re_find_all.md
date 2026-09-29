@@ -1,16 +1,14 @@
-# Find locations of the first regex match
+# Find locations of all regex matches
 
-Return the start and end offsets (in bytes) of the first regex match
-within each element of `string`.
+Return the start and end offsets (in bytes) of all regex matches within
+each element of `string`.
 
 ## Usage
 
 ``` r
-re_find(string, pattern, start = 1L)
+re_find_all(string, pattern, start = 1L)
 
-re_find_shortest(string, pattern, start = 1L)
-
-re_find_captures(string, pattern, start = 1L)
+re_find_all_captures(string, pattern, start = 1L)
 ```
 
 ## Arguments
@@ -35,32 +33,24 @@ re_find_captures(string, pattern, start = 1L)
 
 ## Value
 
-For `re_find()`, an integer matrix with two columns, `start` and `end`,
-with one row per element of `string`. No match, `NA` elements, or
-elements shorter than the `start` argument result in `NA` in both
-columns. See **Match positions** below for the convention used by
-`start` and `end`.
+For `re_find_all()`, a list the length of `string`. Each element is an
+integer matrix with two columns, `start` and `end`, with one row per
+match. See **Match positions** below for the convention used by `start`
+and `end`. No match, `NA` elements, or elements shorter than the `start`
+argument result in `NA` in both columns.
 
-For `re_find_shortest()`, an integer vector containing the end offset of
-the first match for each element of `string`. No match or `NA` elements
-result in `NA`.
-
-For `re_find_captures()`, a two-element list: `matches`, the same
-structure as the output of `re_find()`; and `captures`, a list with one
-element per capture group, each a matrix of the same structure as
-`matches`.
+For `re_find_all_captures()`, a list the length of `string`. Each
+element is a two-element list: `matches`, an integer matrix with one row
+per match (same structure as the output of `re_find_all()`); and
+`captures`, a list with one element per capture group, each a matrix of
+the same structure as `matches`.
 
 ## Details
 
-`re_find()` returns the offset locations of the first match.
+`re_find_all()` returns the offset locations of all matches.
 
-`re_find_shortest()` returns the end offset location of the first match.
-The end location is the place at which the regex engine determined that
-a match exists, but may occur before the end of the proper
-leftmost-first match.
-
-`re_find_captures()` returns the offset locations of the first match as
-well as the offset locations of any capture groups for that match.
+`re_find_all_captures()` returns the offset locations of all matches as
+well as the offset locations of any capture groups for each match.
 
 Patterns must be valid UTF-8 to work with Rust's regex engine. Any
 non-UTF-8 patterns will result in an error. `string` may contain
@@ -96,10 +86,11 @@ details.
 
 ## See also
 
-[re_find_all](https://lj-jenkins.github.io/r-rure/reference/re_find_all.md)
+[re_find](https://lj-jenkins.github.io/r-rure/reference/re_find.md),
+[re_find_shortest](https://lj-jenkins.github.io/r-rure/reference/re_find.md),
 and
-[re_find_all_captures](https://lj-jenkins.github.io/r-rure/reference/re_find_all.md)
-for finding locations of all matches.
+[re_find_captures](https://lj-jenkins.github.io/r-rure/reference/re_find.md)
+for finding locations of the first match.
 
 [re_detect](https://lj-jenkins.github.io/r-rure/reference/re_detect.md)
 and
@@ -113,55 +104,119 @@ the number of bytes in each string.
 
 ``` r
 fruit <- c("apple", "banana", "pear", "pineapple")
-re_find(fruit, "e|a")
+re_find_all(fruit, "e|a")
+#> [[1]]
 #>      start end
 #> [1,]     1   1
-#> [2,]     2   2
-#> [3,]     2   2
-#> [4,]     4   4
-re_find(fruit, "e|a", start = 4)
-#>      start end
-#> [1,]     5   5
-#> [2,]     4   4
-#> [3,]    NA  NA
-#> [4,]     4   4
-
-# 'zero'-length matches can occur
-re_find("bear", "a*")
-#>      start end
-#> [1,]     1   0
-
-# Match positions: start is 1-based inclusive, end is exclusive
-re_find("abc", "a") # start = 1, end = 1
-#>      start end
-#> [1,]     1   1
-re_find("abc", "ab") # start = 1, end = 2
-#>      start end
-#> [1,]     1   2
-re_find("abc", "b") # start = 2, end = 2
+#> [2,]     5   5
+#> 
+#> [[2]]
 #>      start end
 #> [1,]     2   2
-re_find("abc", "^") # start = 1, end = 0 (empty match)
+#> [2,]     4   4
+#> [3,]     6   6
+#> 
+#> [[3]]
+#>      start end
+#> [1,]     2   2
+#> [2,]     3   3
+#> 
+#> [[4]]
+#>      start end
+#> [1,]     4   4
+#> [2,]     5   5
+#> [3,]     9   9
+#> 
+re_find_all(fruit, "e|a", start = 5)
+#> [[1]]
+#>      start end
+#> [1,]     5   5
+#> 
+#> [[2]]
+#>      start end
+#> [1,]     6   6
+#> 
+#> [[3]]
+#>      start end
+#> [1,]    NA  NA
+#> 
+#> [[4]]
+#>      start end
+#> [1,]     5   5
+#> [2,]     9   9
+#> 
+
+# 'zero'-length matches can occur
+re_find_all("bear", "a*")
+#> [[1]]
 #>      start end
 #> [1,]     1   0
-
-x <- c("a=1;b=2", "c=3;d=4")
-re_find_captures(x, "(?<cg_one>\\w+)=(?<cg_two>\\w+)")
-#> $matches
-#>      start end
-#> [1,]     1   3
-#> [2,]     1   3
+#> [2,]     2   1
+#> [3,]     3   3
+#> [4,]     4   3
+#> [5,]     5   4
 #> 
-#> $captures
-#> $captures$cg_one
+
+# Match positions: start is 1-based inclusive, end is exclusive
+re_find_all("abc", "a") # start = 1, end = 1
+#> [[1]]
 #>      start end
 #> [1,]     1   1
-#> [2,]     1   1
 #> 
-#> $captures$cg_two
+re_find_all("abc", "ab") # start = 1, end = 2
+#> [[1]]
+#>      start end
+#> [1,]     1   2
+#> 
+re_find_all("abc", "b") # start = 2, end = 2
+#> [[1]]
+#>      start end
+#> [1,]     2   2
+#> 
+re_find_all("abc", "^") # start = 1, end = 0 (empty match)
+#> [[1]]
+#>      start end
+#> [1,]     1   0
+#> 
+
+x <- c("a=1;b=2", "c=3;d=4")
+re_find_all_captures(x, "(?<cg_one>\\w+)=(?<cg_two>\\w+)")
+#> [[1]]
+#> [[1]]$matches
+#>      start end
+#> [1,]     1   3
+#> [2,]     5   7
+#> 
+#> [[1]]$captures
+#> [[1]]$captures$cg_one
+#>      start end
+#> [1,]     1   1
+#> [2,]     5   5
+#> 
+#> [[1]]$captures$cg_two
 #>      start end
 #> [1,]     3   3
-#> [2,]     3   3
+#> [2,]     7   7
+#> 
+#> 
+#> 
+#> [[2]]
+#> [[2]]$matches
+#>      start end
+#> [1,]     1   3
+#> [2,]     5   7
+#> 
+#> [[2]]$captures
+#> [[2]]$captures$cg_one
+#>      start end
+#> [1,]     1   1
+#> [2,]     5   5
+#> 
+#> [[2]]$captures$cg_two
+#>      start end
+#> [1,]     3   3
+#> [2,]     7   7
+#> 
 #> 
 #> 
 ```

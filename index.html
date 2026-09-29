@@ -90,8 +90,12 @@
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="reference/re_detect.html">re_detect</a></span><span class="op">(</span><span class="va">x</span>, <span class="st">"a|b"</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1]  TRUE  TRUE FALSE</span></span>
+<span><span class="fu"><a href="reference/re_detect.html">re_detect</a></span><span class="op">(</span><span class="va">x</span>, <span class="st">"a|b"</span>, start <span class="op">=</span> <span class="fl">3</span><span class="op">)</span></span>
+<span><span class="co">#&gt; [1] FALSE  TRUE FALSE</span></span>
 <span><span class="fu"><a href="reference/re_where.html">re_where</a></span><span class="op">(</span><span class="va">x</span>, <span class="st">"a|b"</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [1] 1 2</span></span></code></pre></div>
+<span><span class="co">#&gt; [1] 1 2</span></span>
+<span><span class="fu"><a href="reference/re_where.html">re_where</a></span><span class="op">(</span><span class="va">x</span>, <span class="st">"a|b"</span>, start <span class="op">=</span> <span class="fl">3</span><span class="op">)</span></span>
+<span><span class="co">#&gt; [1] 2</span></span></code></pre></div>
 </div>
 <div class="section level4">
 <h4 id="detect-regex-matches-for-a-set-of-patterns">Detect regex matches for a set of patterns<a class="anchor" aria-label="anchor" href="#detect-regex-matches-for-a-set-of-patterns"></a>
@@ -99,8 +103,12 @@
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="reference/re_detect.html">re_set_detect</a></span><span class="op">(</span><span class="va">x</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"a|b"</span>, <span class="st">"c"</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] TRUE TRUE TRUE</span></span>
+<span><span class="fu"><a href="reference/re_detect.html">re_set_detect</a></span><span class="op">(</span><span class="va">x</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"a|b"</span>, <span class="st">"c"</span><span class="op">)</span>, start <span class="op">=</span> <span class="fl">3</span><span class="op">)</span></span>
+<span><span class="co">#&gt; [1] FALSE  TRUE FALSE</span></span>
 <span><span class="fu"><a href="reference/re_where.html">re_set_where</a></span><span class="op">(</span><span class="va">x</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"a|b"</span>, <span class="st">"c"</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [1] 1 2 3</span></span></code></pre></div>
+<span><span class="co">#&gt; [1] 1 2 3</span></span>
+<span><span class="fu"><a href="reference/re_where.html">re_set_where</a></span><span class="op">(</span><span class="va">x</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"a|b"</span>, <span class="st">"c"</span><span class="op">)</span>, start <span class="op">=</span> <span class="fl">3</span><span class="op">)</span></span>
+<span><span class="co">#&gt; [1] 2</span></span></code></pre></div>
 </div>
 <div class="section level4">
 <h4 id="detect-regex-matches-for-each-pattern-in-a-set">Detect regex matches for each pattern in a set<a class="anchor" aria-label="anchor" href="#detect-regex-matches-for-each-pattern-in-a-set"></a>
@@ -111,12 +119,23 @@
 <span><span class="co">#&gt; [1,]  TRUE FALSE</span></span>
 <span><span class="co">#&gt; [2,]  TRUE FALSE</span></span>
 <span><span class="co">#&gt; [3,] FALSE  TRUE</span></span>
+<span><span class="fu"><a href="reference/re_detect.html">re_set_detect_each</a></span><span class="op">(</span><span class="va">x</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"a|b"</span>, <span class="st">"c"</span><span class="op">)</span>, start <span class="op">=</span> <span class="fl">3</span><span class="op">)</span></span>
+<span><span class="co">#&gt;       [,1]  [,2]</span></span>
+<span><span class="co">#&gt; [1,] FALSE FALSE</span></span>
+<span><span class="co">#&gt; [2,]  TRUE FALSE</span></span>
+<span><span class="co">#&gt; [3,] FALSE FALSE</span></span>
 <span><span class="fu"><a href="reference/re_where.html">re_set_where_each</a></span><span class="op">(</span><span class="va">x</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"a|b"</span>, <span class="st">"c"</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [[1]]</span></span>
 <span><span class="co">#&gt; [1] 1 2</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; [[2]]</span></span>
-<span><span class="co">#&gt; [1] 3</span></span></code></pre></div>
+<span><span class="co">#&gt; [1] 3</span></span>
+<span><span class="fu"><a href="reference/re_where.html">re_set_where_each</a></span><span class="op">(</span><span class="va">x</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"a|b"</span>, <span class="st">"c"</span><span class="op">)</span>, start <span class="op">=</span> <span class="fl">3</span><span class="op">)</span></span>
+<span><span class="co">#&gt; [[1]]</span></span>
+<span><span class="co">#&gt; [1] 2</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; [[2]]</span></span>
+<span><span class="co">#&gt; integer(0)</span></span></code></pre></div>
 </div>
 <div class="section level4">
 <h4 id="find-byte-offsets-of-regex-matches">Find byte offsets of regex matches<a class="anchor" aria-label="anchor" href="#find-byte-offsets-of-regex-matches"></a>
@@ -127,12 +146,16 @@
 <span><span class="co">#&gt; [1,]    NA  NA</span></span>
 <span><span class="co">#&gt; [2,]     2   3</span></span>
 <span><span class="co">#&gt; [3,]    NA  NA</span></span>
+<span><span class="fu"><a href="reference/re_find.html">re_find_shortest</a></span><span class="op">(</span><span class="va">x</span>, <span class="st">"an"</span><span class="op">)</span></span>
+<span><span class="co">#&gt; [1] NA  3 NA</span></span>
 <span><span class="fu"><a href="reference/re_find.html">re_find</a></span><span class="op">(</span><span class="va">x</span>, <span class="st">"an"</span>, start <span class="op">=</span> <span class="fl">3</span><span class="op">)</span></span>
 <span><span class="co">#&gt;      start end</span></span>
 <span><span class="co">#&gt; [1,]    NA  NA</span></span>
 <span><span class="co">#&gt; [2,]     4   5</span></span>
 <span><span class="co">#&gt; [3,]    NA  NA</span></span>
-<span><span class="fu"><a href="reference/re_find.html">re_find_all</a></span><span class="op">(</span><span class="va">x</span>, <span class="st">"e|a"</span><span class="op">)</span></span>
+<span><span class="fu"><a href="reference/re_find.html">re_find_shortest</a></span><span class="op">(</span><span class="va">x</span>, <span class="st">"an"</span>, start <span class="op">=</span> <span class="fl">3</span><span class="op">)</span></span>
+<span><span class="co">#&gt; [1] NA  5 NA</span></span>
+<span><span class="fu"><a href="reference/re_find_all.html">re_find_all</a></span><span class="op">(</span><span class="va">x</span>, <span class="st">"e|a"</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [[1]]</span></span>
 <span><span class="co">#&gt;      start end</span></span>
 <span><span class="co">#&gt; [1,]     1   1</span></span>
@@ -146,14 +169,28 @@
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; [[3]]</span></span>
 <span><span class="co">#&gt;      start end</span></span>
-<span><span class="co">#&gt; [1,]     3   3</span></span></code></pre></div>
+<span><span class="co">#&gt; [1,]     3   3</span></span>
+<span><span class="fu"><a href="reference/re_find_all.html">re_find_all</a></span><span class="op">(</span><span class="va">x</span>, <span class="st">"e|a"</span>, start <span class="op">=</span> <span class="fl">4</span><span class="op">)</span></span>
+<span><span class="co">#&gt; [[1]]</span></span>
+<span><span class="co">#&gt;      start end</span></span>
+<span><span class="co">#&gt; [1,]     5   5</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; [[2]]</span></span>
+<span><span class="co">#&gt;      start end</span></span>
+<span><span class="co">#&gt; [1,]     4   4</span></span>
+<span><span class="co">#&gt; [2,]     6   6</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; [[3]]</span></span>
+<span><span class="co">#&gt;      start end</span></span>
+<span><span class="co">#&gt; [1,]    NA  NA</span></span></code></pre></div>
 </div>
 <div class="section level4">
 <h4 id="find-byte-offsets-for-capture-groups">Find byte offsets for capture groups<a class="anchor" aria-label="anchor" href="#find-byte-offsets-for-capture-groups"></a>
 </h4>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">x</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"a=1;b=2"</span>, <span class="st">"c=3;d=4"</span><span class="op">)</span></span>
-<span><span class="fu"><a href="reference/re_find.html">re_find_captures</a></span><span class="op">(</span><span class="va">x</span>, <span class="st">"(?&lt;x&gt;\\w+)=(?&lt;y&gt;\\w+)"</span><span class="op">)</span></span>
+<span><span class="va">rgx</span> <span class="op">&lt;-</span> <span class="st">"(?&lt;x&gt;\\w+)=(?&lt;y&gt;\\w+)"</span></span>
+<span><span class="fu"><a href="reference/re_find.html">re_find_captures</a></span><span class="op">(</span><span class="va">x</span>, <span class="va">rgx</span><span class="op">)</span></span>
 <span><span class="co">#&gt; $matches</span></span>
 <span><span class="co">#&gt;      start end</span></span>
 <span><span class="co">#&gt; [1,]     1   3</span></span>
@@ -168,7 +205,89 @@
 <span><span class="co">#&gt; $captures$y</span></span>
 <span><span class="co">#&gt;      start end</span></span>
 <span><span class="co">#&gt; [1,]     3   3</span></span>
-<span><span class="co">#&gt; [2,]     3   3</span></span></code></pre></div>
+<span><span class="co">#&gt; [2,]     3   3</span></span>
+<span><span class="fu"><a href="reference/re_find.html">re_find_captures</a></span><span class="op">(</span><span class="va">x</span>, <span class="va">rgx</span>, start <span class="op">=</span> <span class="fl">3</span><span class="op">)</span></span>
+<span><span class="co">#&gt; $matches</span></span>
+<span><span class="co">#&gt;      start end</span></span>
+<span><span class="co">#&gt; [1,]     5   7</span></span>
+<span><span class="co">#&gt; [2,]     5   7</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; $captures</span></span>
+<span><span class="co">#&gt; $captures$x</span></span>
+<span><span class="co">#&gt;      start end</span></span>
+<span><span class="co">#&gt; [1,]     5   5</span></span>
+<span><span class="co">#&gt; [2,]     5   5</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; $captures$y</span></span>
+<span><span class="co">#&gt;      start end</span></span>
+<span><span class="co">#&gt; [1,]     7   7</span></span>
+<span><span class="co">#&gt; [2,]     7   7</span></span>
+<span><span class="fu"><a href="reference/re_find_all.html">re_find_all_captures</a></span><span class="op">(</span><span class="va">x</span>, <span class="va">rgx</span><span class="op">)</span></span>
+<span><span class="co">#&gt; [[1]]</span></span>
+<span><span class="co">#&gt; [[1]]$matches</span></span>
+<span><span class="co">#&gt;      start end</span></span>
+<span><span class="co">#&gt; [1,]     1   3</span></span>
+<span><span class="co">#&gt; [2,]     5   7</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; [[1]]$captures</span></span>
+<span><span class="co">#&gt; [[1]]$captures$x</span></span>
+<span><span class="co">#&gt;      start end</span></span>
+<span><span class="co">#&gt; [1,]     1   1</span></span>
+<span><span class="co">#&gt; [2,]     5   5</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; [[1]]$captures$y</span></span>
+<span><span class="co">#&gt;      start end</span></span>
+<span><span class="co">#&gt; [1,]     3   3</span></span>
+<span><span class="co">#&gt; [2,]     7   7</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; [[2]]</span></span>
+<span><span class="co">#&gt; [[2]]$matches</span></span>
+<span><span class="co">#&gt;      start end</span></span>
+<span><span class="co">#&gt; [1,]     1   3</span></span>
+<span><span class="co">#&gt; [2,]     5   7</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; [[2]]$captures</span></span>
+<span><span class="co">#&gt; [[2]]$captures$x</span></span>
+<span><span class="co">#&gt;      start end</span></span>
+<span><span class="co">#&gt; [1,]     1   1</span></span>
+<span><span class="co">#&gt; [2,]     5   5</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; [[2]]$captures$y</span></span>
+<span><span class="co">#&gt;      start end</span></span>
+<span><span class="co">#&gt; [1,]     3   3</span></span>
+<span><span class="co">#&gt; [2,]     7   7</span></span>
+<span><span class="fu"><a href="reference/re_find_all.html">re_find_all_captures</a></span><span class="op">(</span><span class="va">x</span>, <span class="va">rgx</span>, start <span class="op">=</span> <span class="fl">3</span><span class="op">)</span></span>
+<span><span class="co">#&gt; [[1]]</span></span>
+<span><span class="co">#&gt; [[1]]$matches</span></span>
+<span><span class="co">#&gt;      start end</span></span>
+<span><span class="co">#&gt; [1,]     5   7</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; [[1]]$captures</span></span>
+<span><span class="co">#&gt; [[1]]$captures$x</span></span>
+<span><span class="co">#&gt;      start end</span></span>
+<span><span class="co">#&gt; [1,]     5   5</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; [[1]]$captures$y</span></span>
+<span><span class="co">#&gt;      start end</span></span>
+<span><span class="co">#&gt; [1,]     7   7</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; [[2]]</span></span>
+<span><span class="co">#&gt; [[2]]$matches</span></span>
+<span><span class="co">#&gt;      start end</span></span>
+<span><span class="co">#&gt; [1,]     5   7</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; [[2]]$captures</span></span>
+<span><span class="co">#&gt; [[2]]$captures$x</span></span>
+<span><span class="co">#&gt;      start end</span></span>
+<span><span class="co">#&gt; [1,]     5   5</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; [[2]]$captures$y</span></span>
+<span><span class="co">#&gt;      start end</span></span>
+<span><span class="co">#&gt; [1,]     7   7</span></span></code></pre></div>
 </div>
 <div class="section level4">
 <h4 id="escape-regex-metacharacters">Escape regex metacharacters<a class="anchor" aria-label="anchor" href="#escape-regex-metacharacters"></a>
@@ -190,51 +309,57 @@
 <p>For illustration only, these are not meant to be comprehensive or definitive benchmarks.</p>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">x</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="va">letters</span>, <span class="va">letters</span><span class="op">)</span>, <span class="fl">100000</span><span class="op">)</span></span>
-<span><span class="va">x_cap</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="va">letters</span>, <span class="st">"="</span>, <span class="va">letters</span>, <span class="st">";"</span>, <span class="va">letters</span>, <span class="st">"="</span>, <span class="va">letters</span><span class="op">)</span>, <span class="fl">1000</span><span class="op">)</span></span>
+<span><span class="va">x_cap</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="va">letters</span>, <span class="st">"="</span>, <span class="va">letters</span>, <span class="st">";"</span>, <span class="va">letters</span>, <span class="st">"="</span>, <span class="va">letters</span><span class="op">)</span>, <span class="fl">10000</span><span class="op">)</span></span>
 <span><span class="va">x_esc</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>
 <span>  <span class="st">"."</span>, <span class="st">"+"</span>, <span class="st">"*"</span>, <span class="st">"?"</span>, <span class="st">"("</span>, <span class="st">")"</span>, <span class="st">"["</span>, <span class="st">"]"</span>,</span>
 <span>  <span class="st">"{"</span>, <span class="st">"}"</span>, <span class="st">"|"</span>, <span class="st">"^"</span>, <span class="st">"$"</span>, <span class="st">"\\"</span></span>
 <span>  <span class="co"># "&amp;", "-", "~", "#" # stringr doesn't escape these</span></span>
 <span><span class="op">)</span>, <span class="fl">100000</span><span class="op">)</span></span></code></pre></div>
-<div class="sourceCode" id="cb10"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" tabindex="-1"></a><span class="co">#&gt; # A tibble: 4 × 2</span></span>
-<span id="cb10-2"><a href="#cb10-2" tabindex="-1"></a><span class="co">#&gt;   expression                                   median</span></span>
-<span id="cb10-3"><a href="#cb10-3" tabindex="-1"></a><span class="co">#&gt;   &lt;bch:expr&gt;                                 &lt;bch:tm&gt;</span></span>
-<span id="cb10-4"><a href="#cb10-4" tabindex="-1"></a><span class="co">#&gt; 1 "re_detect(x, \"a|b|c\")"                    80.8ms</span></span>
-<span id="cb10-5"><a href="#cb10-5" tabindex="-1"></a><span class="co">#&gt; 2 "re_set_detect(x, c(\"a|b\", \"c\"))"        91.9ms</span></span>
-<span id="cb10-6"><a href="#cb10-6" tabindex="-1"></a><span class="co">#&gt; 3 "stringi::stri_detect_regex(x, \"a|b|c\")"  170.4ms</span></span>
-<span id="cb10-7"><a href="#cb10-7" tabindex="-1"></a><span class="co">#&gt; 4 "grepl(\"a|b|c\", x)"                         139ms</span></span>
+<div class="sourceCode" id="cb10"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" tabindex="-1"></a><span class="co">#&gt; # A tibble: 4 × 3</span></span>
+<span id="cb10-2"><a href="#cb10-2" tabindex="-1"></a><span class="co">#&gt;   expression                                   median mem_alloc</span></span>
+<span id="cb10-3"><a href="#cb10-3" tabindex="-1"></a><span class="co">#&gt;   &lt;bch:expr&gt;                                 &lt;bch:tm&gt; &lt;bch:byt&gt;</span></span>
+<span id="cb10-4"><a href="#cb10-4" tabindex="-1"></a><span class="co">#&gt; 1 "re_detect(x, \"a|b|c\")"                     128ms    9.92MB</span></span>
+<span id="cb10-5"><a href="#cb10-5" tabindex="-1"></a><span class="co">#&gt; 2 "re_set_detect(x, c(\"a|b\", \"c\"))"         184ms    9.92MB</span></span>
+<span id="cb10-6"><a href="#cb10-6" tabindex="-1"></a><span class="co">#&gt; 3 "stringi::stri_detect_regex(x, \"a|b|c\")"    293ms   10.35MB</span></span>
+<span id="cb10-7"><a href="#cb10-7" tabindex="-1"></a><span class="co">#&gt; 4 "grepl(\"a|b|c\", x)"                         234ms    9.92MB</span></span>
 <span id="cb10-8"><a href="#cb10-8" tabindex="-1"></a></span>
-<span id="cb10-9"><a href="#cb10-9" tabindex="-1"></a><span class="co">#&gt; # A tibble: 4 × 2</span></span>
-<span id="cb10-10"><a href="#cb10-10" tabindex="-1"></a><span class="co">#&gt;   expression                             median</span></span>
-<span id="cb10-11"><a href="#cb10-11" tabindex="-1"></a><span class="co">#&gt;   &lt;bch:expr&gt;                           &lt;bch:tm&gt;</span></span>
-<span id="cb10-12"><a href="#cb10-12" tabindex="-1"></a><span class="co">#&gt; 1 "re_where(x, \"a|b|c\")"               81.4ms</span></span>
-<span id="cb10-13"><a href="#cb10-13" tabindex="-1"></a><span class="co">#&gt; 2 "re_set_where(x, c(\"a|b\", \"c\"))"   94.3ms</span></span>
-<span id="cb10-14"><a href="#cb10-14" tabindex="-1"></a><span class="co">#&gt; 3 "stringr::str_which(x, \"a|b|c\")"    174.9ms</span></span>
-<span id="cb10-15"><a href="#cb10-15" tabindex="-1"></a><span class="co">#&gt; 4 "grep(\"a|b|c\", x)"                  145.3ms</span></span>
+<span id="cb10-9"><a href="#cb10-9" tabindex="-1"></a><span class="co">#&gt; # A tibble: 4 × 3</span></span>
+<span id="cb10-10"><a href="#cb10-10" tabindex="-1"></a><span class="co">#&gt;   expression                             median mem_alloc</span></span>
+<span id="cb10-11"><a href="#cb10-11" tabindex="-1"></a><span class="co">#&gt;   &lt;bch:expr&gt;                           &lt;bch:tm&gt; &lt;bch:byt&gt;</span></span>
+<span id="cb10-12"><a href="#cb10-12" tabindex="-1"></a><span class="co">#&gt; 1 "re_where(x, \"a|b|c\")"                101ms      21MB</span></span>
+<span id="cb10-13"><a href="#cb10-13" tabindex="-1"></a><span class="co">#&gt; 2 "re_set_where(x, c(\"a|b\", \"c\"))"    136ms      21MB</span></span>
+<span id="cb10-14"><a href="#cb10-14" tabindex="-1"></a><span class="co">#&gt; 3 "stringr::str_which(x, \"a|b|c\")"      237ms    21.3MB</span></span>
+<span id="cb10-15"><a href="#cb10-15" tabindex="-1"></a><span class="co">#&gt; 4 "grep(\"a|b|c\", x)"                    272ms    11.1MB</span></span>
 <span id="cb10-16"><a href="#cb10-16" tabindex="-1"></a></span>
-<span id="cb10-17"><a href="#cb10-17" tabindex="-1"></a><span class="co">#&gt; # A tibble: 2 × 2</span></span>
-<span id="cb10-18"><a href="#cb10-18" tabindex="-1"></a><span class="co">#&gt;   expression                                     median</span></span>
-<span id="cb10-19"><a href="#cb10-19" tabindex="-1"></a><span class="co">#&gt;   &lt;bch:expr&gt;                                   &lt;bch:tm&gt;</span></span>
-<span id="cb10-20"><a href="#cb10-20" tabindex="-1"></a><span class="co">#&gt; 1 "re_find(x, \"a\")"                            72.9ms</span></span>
-<span id="cb10-21"><a href="#cb10-21" tabindex="-1"></a><span class="co">#&gt; 2 "stringi::stri_locate_first_regex(x, \"a\")"  177.3ms</span></span>
+<span id="cb10-17"><a href="#cb10-17" tabindex="-1"></a><span class="co">#&gt; # A tibble: 2 × 3</span></span>
+<span id="cb10-18"><a href="#cb10-18" tabindex="-1"></a><span class="co">#&gt;   expression                                         median mem_alloc</span></span>
+<span id="cb10-19"><a href="#cb10-19" tabindex="-1"></a><span class="co">#&gt;   &lt;bch:expr&gt;                                       &lt;bch:tm&gt; &lt;bch:byt&gt;</span></span>
+<span id="cb10-20"><a href="#cb10-20" tabindex="-1"></a><span class="co">#&gt; 1 "re_find(x, \"a|b|c\")"                             151ms    19.8MB</span></span>
+<span id="cb10-21"><a href="#cb10-21" tabindex="-1"></a><span class="co">#&gt; 2 "stringi::stri_locate_first_regex(x, \"a|b|c\")"    297ms    19.8MB</span></span>
 <span id="cb10-22"><a href="#cb10-22" tabindex="-1"></a></span>
-<span id="cb10-23"><a href="#cb10-23" tabindex="-1"></a><span class="co">#&gt; # A tibble: 2 × 2</span></span>
-<span id="cb10-24"><a href="#cb10-24" tabindex="-1"></a><span class="co">#&gt;   expression                                                              median</span></span>
-<span id="cb10-25"><a href="#cb10-25" tabindex="-1"></a><span class="co">#&gt;   &lt;bch:expr&gt;                                                              &lt;bch:&gt;</span></span>
-<span id="cb10-26"><a href="#cb10-26" tabindex="-1"></a><span class="co">#&gt; 1 "re_find_captures(x_cap, \"(?&lt;x&gt;\\\\w+)=(?&lt;y&gt;\\\\w+)\")"                2.85ms</span></span>
-<span id="cb10-27"><a href="#cb10-27" tabindex="-1"></a><span class="co">#&gt; 2 "stringi::stri_locate_first_regex(x_cap, \"(?&lt;x&gt;\\\\w+)=(?&lt;y&gt;\\\\w+)\"… 3.72ms</span></span>
+<span id="cb10-23"><a href="#cb10-23" tabindex="-1"></a><span class="co">#&gt; # A tibble: 2 × 3</span></span>
+<span id="cb10-24"><a href="#cb10-24" tabindex="-1"></a><span class="co">#&gt;   expression                                                    median mem_alloc</span></span>
+<span id="cb10-25"><a href="#cb10-25" tabindex="-1"></a><span class="co">#&gt;   &lt;bch:expr&gt;                                                    &lt;bch:&gt; &lt;bch:byt&gt;</span></span>
+<span id="cb10-26"><a href="#cb10-26" tabindex="-1"></a><span class="co">#&gt; 1 "re_find_captures(x_cap, \"(?&lt;x&gt;\\\\w+)=(?&lt;y&gt;\\\\w+)\")"      35.6ms    5.95MB</span></span>
+<span id="cb10-27"><a href="#cb10-27" tabindex="-1"></a><span class="co">#&gt; 2 "stringi::stri_locate_first_regex(x_cap, \"(?&lt;x&gt;\\\\w+)=(?&lt;y… 62.1ms    5.95MB</span></span>
 <span id="cb10-28"><a href="#cb10-28" tabindex="-1"></a></span>
-<span id="cb10-29"><a href="#cb10-29" tabindex="-1"></a><span class="co">#&gt; # A tibble: 2 × 2</span></span>
-<span id="cb10-30"><a href="#cb10-30" tabindex="-1"></a><span class="co">#&gt;   expression                                       median</span></span>
-<span id="cb10-31"><a href="#cb10-31" tabindex="-1"></a><span class="co">#&gt;   &lt;bch:expr&gt;                                     &lt;bch:tm&gt;</span></span>
-<span id="cb10-32"><a href="#cb10-32" tabindex="-1"></a><span class="co">#&gt; 1 "re_find_all(x_cap, \"a\")"                         5ms</span></span>
-<span id="cb10-33"><a href="#cb10-33" tabindex="-1"></a><span class="co">#&gt; 2 "stringi::stri_locate_all_regex(x_cap, \"a\")"   5.66ms</span></span>
+<span id="cb10-29"><a href="#cb10-29" tabindex="-1"></a><span class="co">#&gt; # A tibble: 2 × 3</span></span>
+<span id="cb10-30"><a href="#cb10-30" tabindex="-1"></a><span class="co">#&gt;   expression                                           median mem_alloc</span></span>
+<span id="cb10-31"><a href="#cb10-31" tabindex="-1"></a><span class="co">#&gt;   &lt;bch:expr&gt;                                         &lt;bch:tm&gt; &lt;bch:byt&gt;</span></span>
+<span id="cb10-32"><a href="#cb10-32" tabindex="-1"></a><span class="co">#&gt; 1 "re_find_all(x_cap, \"a|b|c\")"                      24.9ms    1.98MB</span></span>
+<span id="cb10-33"><a href="#cb10-33" tabindex="-1"></a><span class="co">#&gt; 2 "stringi::stri_locate_all_regex(x_cap, \"a|b|c\")"   93.7ms    1.99MB</span></span>
 <span id="cb10-34"><a href="#cb10-34" tabindex="-1"></a></span>
-<span id="cb10-35"><a href="#cb10-35" tabindex="-1"></a><span class="co">#&gt; # A tibble: 2 × 2</span></span>
-<span id="cb10-36"><a href="#cb10-36" tabindex="-1"></a><span class="co">#&gt;   expression                   median</span></span>
-<span id="cb10-37"><a href="#cb10-37" tabindex="-1"></a><span class="co">#&gt;   &lt;bch:expr&gt;                 &lt;bch:tm&gt;</span></span>
-<span id="cb10-38"><a href="#cb10-38" tabindex="-1"></a><span class="co">#&gt; 1 re_escape(x_esc)              143ms</span></span>
-<span id="cb10-39"><a href="#cb10-39" tabindex="-1"></a><span class="co">#&gt; 2 stringr::str_escape(x_esc)    279ms</span></span></code></pre></div>
+<span id="cb10-35"><a href="#cb10-35" tabindex="-1"></a><span class="co">#&gt; # A tibble: 2 × 3</span></span>
+<span id="cb10-36"><a href="#cb10-36" tabindex="-1"></a><span class="co">#&gt;   expression                                                    median mem_alloc</span></span>
+<span id="cb10-37"><a href="#cb10-37" tabindex="-1"></a><span class="co">#&gt;   &lt;bch:expr&gt;                                                    &lt;bch:&gt; &lt;bch:byt&gt;</span></span>
+<span id="cb10-38"><a href="#cb10-38" tabindex="-1"></a><span class="co">#&gt; 1 "re_find_all_captures(x_cap, \"(?&lt;x&gt;\\\\w+)=(?&lt;y&gt;\\\\w+)\")"   294ms    1.98MB</span></span>
+<span id="cb10-39"><a href="#cb10-39" tabindex="-1"></a><span class="co">#&gt; 2 "stringi::stri_locate_all_regex(x_cap, \"(?&lt;x&gt;\\\\w+)=(?&lt;y&gt;\…  446ms    1.98MB</span></span>
+<span id="cb10-40"><a href="#cb10-40" tabindex="-1"></a></span>
+<span id="cb10-41"><a href="#cb10-41" tabindex="-1"></a><span class="co">#&gt; # A tibble: 2 × 3</span></span>
+<span id="cb10-42"><a href="#cb10-42" tabindex="-1"></a><span class="co">#&gt;   expression                   median mem_alloc</span></span>
+<span id="cb10-43"><a href="#cb10-43" tabindex="-1"></a><span class="co">#&gt;   &lt;bch:expr&gt;                 &lt;bch:tm&gt; &lt;bch:byt&gt;</span></span>
+<span id="cb10-44"><a href="#cb10-44" tabindex="-1"></a><span class="co">#&gt; 1 re_escape(x_esc)              218ms    10.7MB</span></span>
+<span id="cb10-45"><a href="#cb10-45" tabindex="-1"></a><span class="co">#&gt; 2 stringr::str_escape(x_esc)    404ms    10.8MB</span></span></code></pre></div>
 </div>
 </div>
   </main><aside class="col-md-3"><div class="links">
