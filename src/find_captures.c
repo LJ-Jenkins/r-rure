@@ -5,33 +5,7 @@
 #include "arg_checks.h"
 #include "regex_compiler.h"
 #include "matrix_fun.h"
-
-static SEXP make_capture_groups(R_xlen_t n, int ncap, rure *re)
-{
-    SEXP cg = PROTECT(Rf_allocVector(VECSXP, ncap));
-
-    if (ncap > 0)
-    {
-        SEXP nm = PROTECT(Rf_allocVector(STRSXP, ncap));
-        rure_iter_capture_names *it = rure_iter_capture_names_new(re);
-        char *name;
-        while (rure_iter_capture_names_next(it, &name))
-        {
-            int32_t idx = rure_capture_name_index(re, name);
-            if (idx >= 1 && idx <= ncap)
-            {
-                SET_STRING_ELT(nm, idx - 1, Rf_mkChar(name));
-            }
-        }
-        rure_iter_capture_names_free(it);
-
-        Rf_setAttrib(cg, R_NamesSymbol, nm);
-        UNPROTECT(1);
-    }
-
-    UNPROTECT(1);
-    return cg;
-}
+#include "capture_groups.h"
 
 SEXP r_rure_find_captures(SEXP string, SEXP pattern, SEXP start)
 {
@@ -52,11 +26,14 @@ SEXP r_rure_find_captures(SEXP string, SEXP pattern, SEXP start)
     if (ncap < 0)
         ncap = 0;
 
-    SEXP cg = PROTECT(make_capture_groups(n, ncap, re));
+    SEXP cap_names = PROTECT(capture_group_names(ncap, re));
+    SEXP cg = PROTECT(make_capture_groups(ncap, cap_names));
+    SEXP dimnames = PROTECT(get_start_end_dimnames());
+
     for (int g = 0; g < ncap; g++)
     {
         SEXP mat = PROTECT(Rf_allocMatrix(INTSXP, (int)n, 2));
-        set_start_end_dimnames(mat);
+        Rf_setAttrib(mat, R_DimNamesSymbol, dimnames);
         SET_VECTOR_ELT(cg, g, mat);
         UNPROTECT(1);
     }
@@ -70,7 +47,7 @@ SEXP r_rure_find_captures(SEXP string, SEXP pattern, SEXP start)
         {
             const char *s_p = CHAR(s);
             size_t s_sz = (size_t)Rf_length(s);
-            if (s_sz >= start_off)
+            if (start_off <= s_sz)
             {
                 ok = rure_find_captures(
                     re, (const uint8_t *)s_p, s_sz, start_off, caps);
@@ -114,7 +91,7 @@ SEXP r_rure_find_captures(SEXP string, SEXP pattern, SEXP start)
         }
     }
 
-    set_start_end_dimnames(ans);
+    Rf_setAttrib(ans, R_DimNamesSymbol, dimnames);
 
     SEXP out = PROTECT(Rf_allocVector(VECSXP, 2));
     SET_VECTOR_ELT(out, 0, ans);
@@ -127,6 +104,6 @@ SEXP r_rure_find_captures(SEXP string, SEXP pattern, SEXP start)
 
     rure_captures_free(caps);
     rure_free(re);
-    UNPROTECT(4); // out_nm, out, cg, ans
+    UNPROTECT(6); // out_nm, out, cg, ans, cap_names, dimnames
     return out;
 }

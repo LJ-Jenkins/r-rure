@@ -1,3 +1,4 @@
+#include <R.h>
 #include <Rinternals.h>
 #include <string.h>
 #include "rure.h"
@@ -11,11 +12,12 @@ SEXP r_rure_find(SEXP string, SEXP pattern, SEXP start)
     size_t start_off = check_start(start);
 
     R_xlen_t n = Rf_xlength(string);
+    SEXP dimnames = PROTECT(get_start_end_dimnames());
     if (n == 0)
     {
         SEXP ans = PROTECT(Rf_allocMatrix(INTSXP, 0, 2));
-        set_start_end_dimnames(ans);
-        UNPROTECT(1);
+        Rf_setAttrib(ans, R_DimNamesSymbol, dimnames);
+        UNPROTECT(2);
         return ans;
     }
 
@@ -40,7 +42,7 @@ SEXP r_rure_find(SEXP string, SEXP pattern, SEXP start)
 
         size_t s_sz = (size_t)Rf_length(s);
 
-        if (s_sz < start_off)
+        if (start_off > s_sz)
         {
             start_col[i] = NA_INTEGER;
             end_col[i] = NA_INTEGER;
@@ -69,7 +71,7 @@ SEXP r_rure_find(SEXP string, SEXP pattern, SEXP start)
     }
 
     rure_free(re);
-    set_start_end_dimnames(ans);
-    UNPROTECT(1);
+    Rf_setAttrib(ans, R_DimNamesSymbol, dimnames);
+    UNPROTECT(2);
     return ans;
 }

@@ -15,7 +15,7 @@ static inline rure *compile_utf8_pattern(const char *pat)
         NULL);
 
     if (re == NULL)
-        Rf_error("invalid regex pattern (ensure UTF-8).");
+        Rf_error("invalid regex pattern. Ensure your regex is valid UTF-8 and contains only supported syntax.");
 
     return re;
 }
@@ -40,7 +40,7 @@ static inline rure_set *compile_utf8_pattern_set(const pattern_set *pats, R_xlen
         NULL);
 
     if (re == NULL)
-        Rf_error("invalid regex pattern set (ensure UTF-8).");
+        Rf_error("invalid regex pattern. Ensure your regex is valid UTF-8 and contains only supported syntax.");
 
     return re;
 }

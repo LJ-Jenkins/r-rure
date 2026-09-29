@@ -3,7 +3,7 @@
 
 #include <R.h>
 
-static inline void set_start_end_dimnames(SEXP out)
+static inline SEXP get_start_end_dimnames(void)
 {
     SEXP dimnames = PROTECT(Rf_allocVector(VECSXP, 2));
     SEXP colnames = PROTECT(Rf_allocVector(STRSXP, 2));
@@ -11,68 +11,40 @@ static inline void set_start_end_dimnames(SEXP out)
     SET_STRING_ELT(colnames, 1, Rf_mkChar("end"));
     SET_VECTOR_ELT(dimnames, 0, R_NilValue);
     SET_VECTOR_ELT(dimnames, 1, colnames);
-    Rf_setAttrib(out, R_DimNamesSymbol, dimnames);
     UNPROTECT(2);
+    return dimnames;
 }
 
-// caller needs to unprotect
-
-static inline SEXP match_to_matrix(rure_match m)
-{
-    SEXP mat = PROTECT(Rf_allocMatrix(INTSXP, 1, 2));
-    int *p = INTEGER(mat);
-    p[0] = (int)m.start + 1;
-    p[1] = (int)m.end;
-    set_start_end_dimnames(mat);
-    return mat;
-}
-
-static inline SEXP na_one_row_matrix(void)
+static inline SEXP na_one_row_matrix(SEXP dimnames)
 {
     SEXP mat = PROTECT(Rf_allocMatrix(INTSXP, 1, 2));
     int *p = INTEGER(mat);
     p[0] = NA_INTEGER;
     p[1] = NA_INTEGER;
-    set_start_end_dimnames(mat);
+    Rf_setAttrib(mat, R_DimNamesSymbol, dimnames);
+    UNPROTECT(1);
     return mat;
 }
 
-static inline SEXP na_n_row_matrix(R_xlen_t n)
+static inline SEXP get_matches_captures_names(void)
 {
-    SEXP mat = PROTECT(Rf_allocMatrix(INTSXP, (int)n, 2));
-    int *p = INTEGER(mat);
-    for (R_xlen_t i = 0; i < n; i++)
-    {
-        p[i] = NA_INTEGER;
-        p[i + n] = NA_INTEGER;
-    }
-    set_start_end_dimnames(mat);
-    return mat;
+    SEXP nm = PROTECT(Rf_allocVector(STRSXP, 2));
+    SET_STRING_ELT(nm, 0, Rf_mkChar("matches"));
+    SET_STRING_ELT(nm, 1, Rf_mkChar("captures"));
+    UNPROTECT(1);
+    return nm;
 }
 
-/* Fill row `i` of the capture-group matrices from `caps`.
- * `cg` is the VECSXP produced by make_capture_groups_attr; it holds `ncap`
- * (n x 2) INT matrices. `n` is the number of strings.
- */
-static inline void fill_capture_groups_row(SEXP cg, R_xlen_t n, R_xlen_t i,
-                                           int ncap, rure_captures *caps)
+static inline SEXP build_matches_captures(SEXP matches_mat, SEXP captures_list, SEXP nm)
 {
-    for (int g = 0; g < ncap; g++)
-    {
-        SEXP m = VECTOR_ELT(cg, g);
-        int *p = INTEGER(m);
-        rure_match mg = {0};
-        if (rure_captures_at(caps, g + 1, &mg))
-        {
-            p[i] = (int)mg.start + 1;
-            p[i + n] = (int)mg.end;
-        }
-        else
-        {
-            p[i] = NA_INTEGER;
-            p[i + n] = NA_INTEGER;
-        }
-    }
+    SEXP elt = PROTECT(Rf_allocVector(VECSXP, 2));
+    SET_VECTOR_ELT(elt, 0, matches_mat);
+    SET_VECTOR_ELT(elt, 1, captures_list);
+
+    Rf_setAttrib(elt, R_NamesSymbol, nm);
+
+    UNPROTECT(1);
+    return elt;
 }
 
 #endif

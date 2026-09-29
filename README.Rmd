@@ -47,32 +47,45 @@ x <- c("apple", "banana", "cherry")
 #### Detect regex matches
 ```{r re example}
 re_detect(x, "a|b")
+re_detect(x, "a|b", start = 3)
 re_where(x, "a|b")
+re_where(x, "a|b", start = 3)
 ```
 
 #### Detect regex matches for a set of patterns
 ```{r set example}
 re_set_detect(x, c("a|b", "c"))
+re_set_detect(x, c("a|b", "c"), start = 3)
 re_set_where(x, c("a|b", "c"))
+re_set_where(x, c("a|b", "c"), start = 3)
 ```
 
 #### Detect regex matches for each pattern in a set
 ```{r set where each example}
 re_set_detect_each(x, c("a|b", "c"))
+re_set_detect_each(x, c("a|b", "c"), start = 3)
 re_set_where_each(x, c("a|b", "c"))
+re_set_where_each(x, c("a|b", "c"), start = 3)
 ```
 
 #### Find byte offsets of regex matches
 ```{r find example}
 re_find(x, "an")
+re_find_shortest(x, "an")
 re_find(x, "an", start = 3)
+re_find_shortest(x, "an", start = 3)
 re_find_all(x, "e|a")
+re_find_all(x, "e|a", start = 4)
 ```
 
 #### Find byte offsets for capture groups
 ```{r find captures example}
 x <- c("a=1;b=2", "c=3;d=4")
-re_find_captures(x, "(?<x>\\w+)=(?<y>\\w+)")
+rgx <- "(?<x>\\w+)=(?<y>\\w+)"
+re_find_captures(x, rgx)
+re_find_captures(x, rgx, start = 3)
+re_find_all_captures(x, rgx)
+re_find_all_captures(x, rgx, start = 3)
 ```
 
 #### Escape regex metacharacters
@@ -91,7 +104,7 @@ For illustration only, these are not meant to be comprehensive or definitive ben
 
 ```{r bench setup}
 x <- rep(paste0(letters, letters), 100000)
-x_cap <- rep(paste0(letters, "=", letters, ";", letters, "=", letters), 1000)
+x_cap <- rep(paste0(letters, "=", letters, ";", letters, "=", letters), 10000)
 x_esc <- rep(c(
   ".", "+", "*", "?", "(", ")", "[", "]",
   "{", "}", "|", "^", "$", "\\"
@@ -99,50 +112,62 @@ x_esc <- rep(c(
 ), 100000)
 ```
 
+```{r bench fn, echo = FALSE}
+bmark <- function(...) {
+  invisible(gc())
+  bench::mark(..., min_time = Inf, max_iterations = 50, check = FALSE)[c("expression", "median", "mem_alloc")]
+}
+```
+
 ```{r regex detect bench, echo = FALSE, cache=TRUE}
-bench::mark(
+bmark(
   re_detect(x, "a|b|c"),
   re_set_detect(x, c("a|b", "c")),
   stringi::stri_detect_regex(x, "a|b|c"),
   grepl("a|b|c", x)
-)[c("expression", "median")]
+)
 ```
 
 ```{r regex where bench, echo = FALSE, cache=TRUE}
-bench::mark(
+bmark(
   re_where(x, "a|b|c"),
   re_set_where(x, c("a|b", "c")),
   stringr::str_which(x, "a|b|c"),
   grep("a|b|c", x)
-)[c("expression", "median")]
+)
 ```
 
 ```{r regex find/locate bench, echo = FALSE, cache=TRUE}
-bench::mark(
-  re_find(x, "a"),
-  stringi::stri_locate_first_regex(x, "a")
-)[c("expression", "median")]
+bmark(
+  re_find(x, "a|b|c"),
+  stringi::stri_locate_first_regex(x, "a|b|c")
+)
 ```
 
 ```{r regex find/locate captures bench, echo = FALSE, cache=TRUE}
-bench::mark(
+bmark(
   re_find_captures(x_cap, "(?<x>\\w+)=(?<y>\\w+)"),
-  stringi::stri_locate_first_regex(x_cap, "(?<x>\\w+)=(?<y>\\w+)", capture_groups = TRUE),
-  check = FALSE
-)[c("expression", "median")]
+  stringi::stri_locate_first_regex(x_cap, "(?<x>\\w+)=(?<y>\\w+)", capture_groups = TRUE)
+)
 ```
 
 ```{r regex find/locate all bench, echo = FALSE, cache=TRUE}
-bench::mark(
-  re_find_all(x_cap, "a"),
-  stringi::stri_locate_all_regex(x_cap, "a"),
-  check = FALSE
-)[c("expression", "median")]
+bmark(
+  re_find_all(x_cap, "a|b|c"),
+  stringi::stri_locate_all_regex(x_cap, "a|b|c")
+)
+```
+
+```{r regex find/locate all captures bench, echo = FALSE, cache=TRUE}
+bmark(
+  re_find_all_captures(x_cap, "(?<x>\\w+)=(?<y>\\w+)"),
+  stringi::stri_locate_all_regex(x_cap, "(?<x>\\w+)=(?<y>\\w+)", capture_groups = TRUE)
+)
 ```
 
 ```{r regex escape bench, echo = FALSE, cache=TRUE}
-bench::mark(
+bmark(
   re_escape(x_esc),
   stringr::str_escape(x_esc)
-)[c("expression", "median")]
+)
 ```

@@ -1,15 +1,23 @@
-#' @title Find locations of regex matches
+#' @title Find locations of the first regex match
 #' @description
 #' Return the start and end offsets (in bytes)
-#' of regex matches within each element of `string`.
+#' of the first regex match within each element of `string`.
 #' @param string Character vector.
-#' @param pattern Pattern to look for (single string).
+#' @param pattern Pattern to look for. For more information
+#' see [here][re_pattern].
 #' @param start Byte offset at which to start searching (`1`-based).
-#' Default is `1` (start at the beginning of each string).
+#' Default is `1` (start at the beginning of each string). The regex
+#' engine may look at bytes before the start position to determine
+#' match information. For example, if the start position is greater
+#' than `1`, then the `"\\A"` ("begin text") anchor can never match.
+#' For more information see [here][re_start].
 #' @details
 #' `re_find()` returns the offset locations of the first match.
 #'
-#' `re_find_all()` returns the offset locations of all matches.
+#' `re_find_shortest()` returns the end offset location of the first match.
+#' The end location is the place at which the regex engine
+#' determined that a match exists, but may occur before the end of the proper
+#' leftmost-first match.
 #'
 #' `re_find_captures()` returns the offset locations of the first match
 #' as well as the offset locations of any capture groups for that match.
@@ -18,46 +26,66 @@
 #' Any non-UTF-8 patterns will result in an error. `string` may contain
 #' arbitrary bytes but ASCII compatible text is more useful, and UTF-8
 #' is more useful still. Other text encodings are not supported.
+#' @section Match positions:
+#'
+#' Match positions use the following convention:
+#'
+#' * `start` is the **1-based** byte position of the first byte of the
+#'   match.
+#' * `end` is the **exclusive** end offset (0-based), i.e. the position
+#'   just past the last byte of the match.
+#'
+#' So a match on the first byte of `"abc"` has `start = 1, end = 1`; a
+#' match on the first two bytes has `start = 1, end = 2`. `end - start + 1`
+#' gives the byte length of the match, and `substr(string, start, end)`
+#' extracts the matched substring (for ASCII input).
+#'
+#' An empty match has `end == start - 1`. For example,
+#' `re_find("abc", "^")` returns `start = 1, end = 0`.
+#'
+#' These are **byte** offsets, not character offsets. For strings
+#' containing multi-byte UTF-8 characters, `start` and `end` do not
+#' correspond to character positions, and **R**'s character-based string
+#' functions (`substr()`, `substring()`) will not correctly extract the
+#' match. See [here][re_pattern] for details.
 #' @return
-#' For `re_find()`, a (integer) matrix with two columns:
-#' `start` and `end`. Each row corresponds to an element of `string`
-#' and contains the `start` and `end` offsets of the match.
-#' No match or `NA` string elements will result in `NA` values in both
-#' the `start` and `end` columns. The same will occur for elements of
-#' `string` that are shorter than the specified `start` offset.
+#' For `re_find()`, an integer matrix with two columns, `start` and
+#' `end`, with one row per element of `string`. No match, `NA`
+#' elements, or elements shorter than the `start` argument result in
+#' `NA` in both columns. See **Match positions** below for the
+#' convention used by `start` and `end`.
 #'
-#' For `re_find_captures()`, a two-element list. The first element
-#' (`'matches'`) is the same as the output of `re_find()`. The second
-#' element (`'captures'`) is a list the length of the number of capture
-#' groups, with each element containing a matrix of the same
-#' structure described but for each capture group.
+#' For `re_find_shortest()`, an integer vector containing the end
+#' offset of the first match for each element of `string`. No match
+#' or `NA` elements result in `NA`.
 #'
-#' For `re_find_all()`, a list the length of `string` with each element
-#' containing a matrix with `n` rows where `n` is the number of matches
-#' for that element of `string`. No matches will result in a matrix with
-#' a single row with `NA` values in both the `start` and `end` columns.
-#' @note
-#' Patterns that can match the empty string (such as `"a*"`) will
-#' produce additional zero-length matches, including a trailing empty match
-#' at the end of each string. In the output this can manifest as a row
-#' where the `start` value is greater than the `end` value (often where the
-#' `end` value is `0`).
+#' For `re_find_captures()`, a two-element list: `matches`, the same
+#' structure as the output of `re_find()`; and `captures`, a list with
+#' one element per capture group, each a matrix of the same structure
+#' as `matches`.
 #' @seealso
+#' [re_find_all] and [re_find_all_captures] for finding locations of all
+#' matches.
+#'
 #' [re_detect] and [re_where] to return locations of vector element matches.
 #'
 #' [nbytes] to get the number of bytes in each string.
 #' @examples
 #' fruit <- c("apple", "banana", "pear", "pineapple")
-#' re_find(fruit, "ap")
-#' re_find(fruit, "ap", start = 2)
-#'
-#' # rure operates on bytes - results may not be what
-#' # you expect for multibyte characters.
-#' regexec("caf\u00e9", "caf\u00e9 caf\u00e9")
-#' re_find("caf\u00e9 caf\u00e9", "caf\u00e9")
+#' re_find(fruit, "e|a")
+#' re_find(fruit, "e|a", start = 4)
 #'
 #' # 'zero'-length matches can occur
 #' re_find("bear", "a*")
+#'
+#' # Match positions: start is 1-based inclusive, end is exclusive
+#' re_find("abc", "a") # start = 1, end = 1
+#' re_find("abc", "ab") # start = 1, end = 2
+#' re_find("abc", "b") # start = 2, end = 2
+#' re_find("abc", "^") # start = 1, end = 0 (empty match)
+#'
+#' x <- c("a=1;b=2", "c=3;d=4")
+#' re_find_captures(x, "(?<cg_one>\\w+)=(?<cg_two>\\w+)")
 #' @export
 re_find <- function(string, pattern, start = 1L) {
   .Call(r_rure_find, string, pattern, start)
@@ -65,12 +93,12 @@ re_find <- function(string, pattern, start = 1L) {
 
 #' @rdname re_find
 #' @export
-re_find_captures <- function(string, pattern, start = 1L) {
-  .Call(r_rure_find_captures, string, pattern, start)
+re_find_shortest <- function(string, pattern, start = 1L) {
+  .Call(r_rure_shortest_match_offset, string, pattern, start)
 }
 
 #' @rdname re_find
 #' @export
-re_find_all <- function(string, pattern, start = 1L) {
-  .Call(r_rure_find_all, string, pattern, start)
+re_find_captures <- function(string, pattern, start = 1L) {
+  .Call(r_rure_find_captures, string, pattern, start)
 }

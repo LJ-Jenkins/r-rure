@@ -19,3 +19,23 @@ expected_captures <- function(match, ...) {
 
   list(matches = match, captures = groups)
 }
+
+compiles <- function(pattern, string = "test") {
+  tryCatch(
+    {
+      re_detect(string, pattern)
+      TRUE
+    },
+    error = function(e) FALSE
+  )
+}
+
+errors <- function(pattern, string = "test") {
+  tryCatch(
+    {
+      re_detect(string, pattern)
+      FALSE
+    },
+    error = function(e) TRUE
+  )
+}
