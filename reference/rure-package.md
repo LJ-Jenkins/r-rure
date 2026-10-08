@@ -7,9 +7,17 @@ searching using finite automata. In exchange, it does not include some
 common regex features such as backreferences and arbitrary lookaround.
 However, it does include capturing groups, lazy matching, 'Unicode'
 support and word boundary assertions. Matching semantics generally
-correspond to 'Perl', or "leftmost first". Namely, the match locations
+correspond to 'Perl', or 'leftmost first'. Namely, the match locations
 reported correspond to the first match that would be found by a
 backtracking engine.
+
+## Note
+
+For detailed guidance about rure semantics, see the help for
+[patterns](https://lj-jenkins.github.io/r-rure/reference/re_pattern.md)
+and the
+[start](https://lj-jenkins.github.io/r-rure/reference/re_start.md)
+parameter.
 
 ## See also
 

@@ -4,9 +4,6 @@
 [regex crate](https://github.com/rust-lang/regex) (through the [rure C
 API](https://github.com/rust-lang/regex/tree/master/regex-capi)).
 
-- **NOTE:** This package is in development and is subject to significant
-  change.
-
 From the rure docs:
 
 - rure is a C API to Rust’s regex library, which guarantees linear time

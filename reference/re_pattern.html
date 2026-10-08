@@ -66,15 +66,11 @@ Notable differences are described below.</p>
     <p><code>pattern</code> must be a non-empty string. The empty string <code>""</code> is
 <strong>not a valid pattern</strong> and will raise an error, even though the
 underlying engine accepts it.</p>
-<p>The reason is that rure uses <code>regex::bytes</code>, under which the empty
-pattern matches at <strong>every byte offset</strong>, including positions that
-split a multi-byte UTF-8 codepoint. For a 4-byte emoji,
-<code><a href="re_find_all.html">re_find_all()</a></code> with an empty pattern would return 5 matches, at
-byte offsets 0, 1, 2, 3, and 4. Rejecting <code>""</code> avoids this class of
-surprising output.</p>
-<p>If you want to match the empty string at every position, use
-<code>".*"</code>, <code>".?"</code>, or <code>"(?:)"</code>. If you want a pattern that matches
-<strong>nothing</strong>, use <code>"[a&amp;&amp;b]"</code>, an empty character class.</p>
+<p>The empty pattern could be passed within a variable in error, so
+rure explicitly disallows it and instead enforces that
+matching the empty string must be done explicitly with a non-empty
+pattern such as <code>".*"</code>, <code>".?"</code>, or <code>"(?:)"</code>. For a pattern that
+matches nothing, use <code>"[a&amp;&amp;b]"</code>.</p>
     </div>
     <div class="section level2">
     <h2 id="regex-semantics">Regex semantics<a class="anchor" aria-label="anchor" href="#regex-semantics"></a></h2>
@@ -82,25 +78,25 @@ surprising output.</p>
 PCRE, Oniguruma, and base <strong>R</strong>'s <code><a href="https://rdrr.io/r/base/grep.html" class="external-link">grep()</a></code> in several important
 ways:</p><ul><li><p><strong>No backtracking.</strong> The engine is a finite automaton, not a
 backtracking matcher. It runs in time linear in the input length,
-but <strong>backreferences</strong> (<code>\1</code>, <code>\2</code>, ...) and <strong>look-around</strong>
-(<code>(?=...)</code>, <code>(?!...)</code>, <code>(?&lt;=...)</code>, <code>(?&lt;!...)</code>) are <strong>not
+but <strong>backreferences</strong> (<code>"\1"</code>, <code>"\2"</code>, ...) and <strong>look-around</strong>
+(<code>"(?=...)"</code>, <code>"(?!...)"</code>, <code>"(?&lt;=...)"</code>, <code>"(?&lt;!...)"</code>) are <strong>not
 supported</strong>. Attempting to use them raises an error.</p></li>
 <li><p><strong>Leftmost-first, not leftmost-longest.</strong> Among matches starting
 at the same position, the engine prefers the first branch of an
 alternation that matches, not the longest overall match. For
 example, <code>"sam|samwise"</code> matches <code>"sam"</code> in <code>"samwise"</code>, while
 <code>"samwise|sam"</code> matches <code>"samwise"</code>.</p></li>
-<li><p><strong>Unicode by default.</strong> <code>\w</code>, <code>\d</code>, <code>\s</code>, and <code>.</code> operate on
-Unicode codepoints, not bytes. <code>\w</code> matches any Unicode word
-character (<code>\p{Alphabetic}</code> plus <code>\p{M}</code>, <code>\d</code>, <code>\p{Pc}</code>, and
-<code>\p{Join_Control}</code>), not just <code>[A-Za-z0-9_]</code>. <code>.</code> does not match
+<li><p><strong>Unicode by default.</strong> <code>"\\w"</code>, <code>"\\d"</code>, <code>"\\s"</code>, and <code>"."</code> operate on
+Unicode codepoints, not bytes. <code>"\\w"</code> matches any Unicode word
+character (<code>"\\p{Alphabetic}"</code> plus <code>"\\p{M}"</code>, <code>"\\d"</code>, <code>"\\p{Pc}"</code>, and
+<code>"\\p{Join_Control}"</code>), not just <code>"[A-Za-z0-9_]"</code>. <code>"."</code> does not match
 newline unless the <code>s</code> flag is set.</p></li>
 <li><p><strong>Byte-level matching is available.</strong> Disabling Unicode with
-<code>(?-u:...)</code> makes <code>.</code> match a single byte and allows patterns
+<code>"(?-u:...)"</code> makes <code>"."</code> match a single byte and allows patterns
 that would otherwise split codepoints.</p></li>
 <li><p><strong>Every search is implicitly anchored to "anywhere in the
 string".</strong> The engine finds the leftmost match anywhere in the
-haystack. Use <code>^</code> / <code>\A</code> and <code>$</code> / <code>\z</code> to anchor to the whole
+haystack. Use <code>"^"</code> / <code>"\\A"</code> and <code>"$"</code> / <code>"\\z"</code> to anchor to the whole
 string (see <a href="re_start.html">re_start</a> for how <code>start</code> interacts with anchors).</p></li>
 </ul></div>
     <div class="section level2">
@@ -129,11 +125,11 @@ and UTF-8 is more useful still. Other text encodings are not supported.</p>
 
 <p></p><div class="sourceCode r"><pre><code>.             any character except new line (any character with s flag)
 [0-9]         any ASCII digit
-\d            digit (\p{Nd})
-\D            not digit
-\p{Greek}     Unicode character class (general category or script)
-\pX           Unicode character class, one-letter name
-\P{Greek}     negated Unicode character class
+\\d           digit (\p{Nd})
+\\D           not digit
+\\p{Greek}    Unicode character class (general category or script)
+\\pX          Unicode character class, one-letter name
+\\P{Greek}    negated Unicode character class
 </code></pre><p></p></div>
 </div>
 
@@ -151,7 +147,7 @@ and UTF-8 is more useful still. Other text encodings are not supported.</p>
 [0-9&amp;&amp;[^4]]   subtraction via intersection and negation
 [0-9--4]      direct subtraction
 [a-g~~b-h]    symmetric difference
-[\[\]]        escaping inside a character class
+[\\[\\]]      escaping inside a character class
 [a&amp;&amp;b]        empty class, matches nothing
 </code></pre><p></p></div>
 </div>
@@ -169,9 +165,9 @@ x|y           alternation (prefer x)
 <h3 id="repetitions">Repetitions<a class="anchor" aria-label="anchor" href="#repetitions"></a></h3>
 
 
-<p></p><div class="sourceCode r"><pre><code>x*  x+  x?          greedy
-x*? x+? x??         ungreedy / lazy
-x{n,m} x{n,} x{n}   greedy with bounds
+<p></p><div class="sourceCode r"><pre><code>x*  x+  x?           greedy
+x*? x+? x??          ungreedy / lazy
+x{n,m} x{n,} x{n}    greedy with bounds
 x{n,m}? x{n,}? x{n}? ungreedy with bounds
 </code></pre><p></p></div>
 </div>
@@ -182,12 +178,12 @@ x{n,m}? x{n,}? x{n}? ungreedy with bounds
 
 <p></p><div class="sourceCode r"><pre><code>^                start of haystack (or line, with m flag)
 $                end of haystack (or line, with m flag)
-\A               start of haystack (even with m flag)
-\z               end of haystack (even with m flag)
-\b               Unicode word boundary
-\B               not a word boundary
-\b{start}, \&lt;    start-of-word boundary
-\b{end},   \&gt;    end-of-word boundary
+\\A              start of haystack (even with m flag)
+\\z              end of haystack (even with m flag)
+\\b              Unicode word boundary
+\\B              not a word boundary
+\\b{start}, \\&lt;  start-of-word boundary
+\\b{end},   \\&gt;  end-of-word boundary
 </code></pre><p></p></div>
 </div>
 
@@ -222,20 +218,20 @@ x     verbose mode, ignore whitespace and allow # comments
 <h3 id="escape-sequences">Escape sequences<a class="anchor" aria-label="anchor" href="#escape-sequences"></a></h3>
 
 
-<p></p><div class="sourceCode r"><pre><code>\*              literal * (works for any ASCII punctuation)
-\a \f \t \n \r \v   control characters
-\A \z \b \B     anchors and boundaries
-\123            octal character code (up to three digits)
-\x7F            hex character code (exactly two digits)
-\x{10FFFF}      hex codepoint (any length)
-\u007F          hex character code (exactly four digits)
-\u{7F}          hex codepoint (any length)
-\U0000007F      hex character code (exactly eight digits)
-\U{7F}          hex codepoint (any length)
-\p{Letter}      Unicode character class
-\P{Letter}      negated Unicode character class
-\d \s \w        Perl character class
-\D \S \W        negated Perl character class
+<p></p><div class="sourceCode r"><pre><code>\\*                       literal * (works for any ASCII punctuation)
+\\a \\f \\t \\n \\r \\v   control characters
+\\A \\z \\b \\B           anchors and boundaries
+\\123                     octal character code (up to three digits)
+\\x7F                     hex character code (exactly two digits)
+\\x{10FFFF}               hex codepoint (any length)
+\\u007F                   hex character code (exactly four digits)
+\\u{7F}                   hex codepoint (any length)
+\\U0000007F               hex character code (exactly eight digits)
+\\U{7F}                   hex codepoint (any length)
+\\p{Letter}               Unicode character class
+\\P{Letter}               negated Unicode character class
+\\d \\s \\w               Perl character class
+\\D \\S \\W               negated Perl character class
 </code></pre><p></p></div>
 </div>
 
@@ -243,12 +239,12 @@ x     verbose mode, ignore whitespace and allow # comments
 <h3 id="perl-character-classes-unicode-friendly-">Perl character classes (Unicode friendly)<a class="anchor" aria-label="anchor" href="#perl-character-classes-unicode-friendly-"></a></h3>
 
 
-<p></p><div class="sourceCode r"><pre><code>\d    digit (\p{Nd})
-\D    not digit
-\s    whitespace (\p{White_Space})
-\S    not whitespace
-\w    word character
-\W    not word character
+<p></p><div class="sourceCode r"><pre><code>\\d    digit (\\p{Nd})
+\\D    not digit
+\\s    whitespace (\\p{White_Space})
+\\S    not whitespace
+\\w    word character
+\\W    not word character
 </code></pre><p></p></div>
 </div>
 
@@ -266,7 +262,7 @@ x     verbose mode, ignore whitespace and allow # comments
 [[:lower:]]    [a-z]
 [[:print:]]    [ -~]
 [[:punct:]]    [!-/:-@\[-`{-~]
-[[:space:]]    [\t\n\v\f\r ]
+[[:space:]]    [\\t\\n\\v\\f\\r ]
 [[:upper:]]    [A-Z]
 [[:word:]]     [0-9A-Za-z_]
 [[:xdigit:]]   [0-9A-Fa-f]
@@ -288,10 +284,10 @@ typically error, instead being parsed as nested quantifiers.</p><ul><li><p>Backr
 <li><p>Recursion: <code>(?0)</code></p></li>
 <li><p>Subroutine calls: <code>(?&amp;name)</code></p></li>
 <li><p>Callouts: <code>(?C...)</code></p></li>
-<li><p><code>\K</code> (reset match start)</p></li>
-<li><p><code>\G</code> (match at previous match end)</p></li>
-<li><p><code>\R</code> (any newline sequence)</p></li>
-<li><p><code>\X</code> (extended grapheme cluster)</p></li>
+<li><p><code>\\K</code> (reset match start)</p></li>
+<li><p><code>\\G</code> (match at previous match end)</p></li>
+<li><p><code>\\R</code> (any newline sequence)</p></li>
+<li><p><code>\\X</code> (extended grapheme cluster)</p></li>
 </ul><p>If you need these, use base <strong>R</strong>, <code>stringi</code>, or <code>stringr</code>.</p>
     </div>
     <div class="section level2">

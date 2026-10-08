@@ -16,16 +16,10 @@ differences are described below.
 valid pattern** and will raise an error, even though the underlying
 engine accepts it.
 
-The reason is that rure uses `regex::bytes`, under which the empty
-pattern matches at **every byte offset**, including positions that split
-a multi-byte UTF-8 codepoint. For a 4-byte emoji,
-[`re_find_all()`](https://lj-jenkins.github.io/r-rure/reference/re_find_all.md)
-with an empty pattern would return 5 matches, at byte offsets 0, 1, 2,
-3, and 4. Rejecting `""` avoids this class of surprising output.
-
-If you want to match the empty string at every position, use `".*"`,
-`".?"`, or `"(?:)"`. If you want a pattern that matches **nothing**, use
-`"[a&&b]"`, an empty character class.
+The empty pattern could be passed within a variable in error, so rure
+explicitly disallows it and instead enforces that matching the empty
+string must be done explicitly with a non-empty pattern such as `".*"`,
+`".?"`, or `"(?:)"`. For a pattern that matches nothing, use `"[a&&b]"`.
 
 ## Regex semantics
 
@@ -35,9 +29,9 @@ PCRE, Oniguruma, and base **R**'s
 
 - **No backtracking.** The engine is a finite automaton, not a
   backtracking matcher. It runs in time linear in the input length, but
-  **backreferences** (`\1`, `\2`, ...) and **look-around** (`(?=...)`,
-  `(?!...)`, `(?<=...)`, `(?<!...)`) are **not supported**. Attempting
-  to use them raises an error.
+  **backreferences** (`"\1"`, `"\2"`, ...) and **look-around**
+  (`"(?=...)"`, `"(?!...)"`, `"(?<=...)"`, `"(?<!...)"`) are **not
+  supported**. Attempting to use them raises an error.
 
 - **Leftmost-first, not leftmost-longest.** Among matches starting at
   the same position, the engine prefers the first branch of an
@@ -45,19 +39,19 @@ PCRE, Oniguruma, and base **R**'s
   `"sam|samwise"` matches `"sam"` in `"samwise"`, while `"samwise|sam"`
   matches `"samwise"`.
 
-- **Unicode by default.** `\w`, `\d`, `\s`, and `.` operate on Unicode
-  codepoints, not bytes. `\w` matches any Unicode word character
-  (`\p{Alphabetic}` plus `\p{M}`, `\d`, `\p{Pc}`, and
-  `\p{Join_Control}`), not just `[A-Za-z0-9_]`. `.` does not match
-  newline unless the `s` flag is set.
+- **Unicode by default.** `"\\w"`, `"\\d"`, `"\\s"`, and `"."` operate
+  on Unicode codepoints, not bytes. `"\\w"` matches any Unicode word
+  character (`"\\p{Alphabetic}"` plus `"\\p{M}"`, `"\\d"`, `"\\p{Pc}"`,
+  and `"\\p{Join_Control}"`), not just `"[A-Za-z0-9_]"`. `"."` does not
+  match newline unless the `s` flag is set.
 
 - **Byte-level matching is available.** Disabling Unicode with
-  `(?-u:...)` makes `.` match a single byte and allows patterns that
+  `"(?-u:...)"` makes `"."` match a single byte and allows patterns that
   would otherwise split codepoints.
 
 - **Every search is implicitly anchored to "anywhere in the string".**
-  The engine finds the leftmost match anywhere in the haystack. Use `^`
-  / `\A` and `$` / `\z` to anchor to the whole string (see
+  The engine finds the leftmost match anywhere in the haystack. Use
+  `"^"` / `"\\A"` and `"$"` / `"\\z"` to anchor to the whole string (see
   [re_start](https://lj-jenkins.github.io/r-rure/reference/re_start.md)
   for how `start` interacts with anchors).
 
@@ -88,11 +82,11 @@ UTF-8 is more useful still. Other text encodings are not supported.
 
     .             any character except new line (any character with s flag)
     [0-9]         any ASCII digit
-    \d            digit (\p{Nd})
-    \D            not digit
-    \p{Greek}     Unicode character class (general category or script)
-    \pX           Unicode character class, one-letter name
-    \P{Greek}     negated Unicode character class
+    \\d           digit (\p{Nd})
+    \\D           not digit
+    \\p{Greek}    Unicode character class (general category or script)
+    \\pX          Unicode character class, one-letter name
+    \\P{Greek}    negated Unicode character class
 
 ### Character classes
 
@@ -106,7 +100,7 @@ UTF-8 is more useful still. Other text encodings are not supported.
     [0-9&&[^4]]   subtraction via intersection and negation
     [0-9--4]      direct subtraction
     [a-g~~b-h]    symmetric difference
-    [\[\]]        escaping inside a character class
+    [\\[\\]]      escaping inside a character class
     [a&&b]        empty class, matches nothing
 
 ### Composites
@@ -116,21 +110,21 @@ UTF-8 is more useful still. Other text encodings are not supported.
 
 ### Repetitions
 
-    x*  x+  x?          greedy
-    x*? x+? x??         ungreedy / lazy
-    x{n,m} x{n,} x{n}   greedy with bounds
+    x*  x+  x?           greedy
+    x*? x+? x??          ungreedy / lazy
+    x{n,m} x{n,} x{n}    greedy with bounds
     x{n,m}? x{n,}? x{n}? ungreedy with bounds
 
 ### Anchors and empty matches
 
     ^                start of haystack (or line, with m flag)
     $                end of haystack (or line, with m flag)
-    \A               start of haystack (even with m flag)
-    \z               end of haystack (even with m flag)
-    \b               Unicode word boundary
-    \B               not a word boundary
-    \b{start}, \<    start-of-word boundary
-    \b{end},   \>    end-of-word boundary
+    \\A              start of haystack (even with m flag)
+    \\z              end of haystack (even with m flag)
+    \\b              Unicode word boundary
+    \\B              not a word boundary
+    \\b{start}, \\<  start-of-word boundary
+    \\b{end},   \\>  end-of-word boundary
 
 ### Grouping and flags
 
@@ -159,29 +153,29 @@ case-insensitively and `b` case-sensitively.
 
 ### Escape sequences
 
-    \*              literal * (works for any ASCII punctuation)
-    \a \f \t \n \r \v   control characters
-    \A \z \b \B     anchors and boundaries
-    \123            octal character code (up to three digits)
-    \x7F            hex character code (exactly two digits)
-    \x{10FFFF}      hex codepoint (any length)
-    \u007F          hex character code (exactly four digits)
-    \u{7F}          hex codepoint (any length)
-    \U0000007F      hex character code (exactly eight digits)
-    \U{7F}          hex codepoint (any length)
-    \p{Letter}      Unicode character class
-    \P{Letter}      negated Unicode character class
-    \d \s \w        Perl character class
-    \D \S \W        negated Perl character class
+    \\*                       literal * (works for any ASCII punctuation)
+    \\a \\f \\t \\n \\r \\v   control characters
+    \\A \\z \\b \\B           anchors and boundaries
+    \\123                     octal character code (up to three digits)
+    \\x7F                     hex character code (exactly two digits)
+    \\x{10FFFF}               hex codepoint (any length)
+    \\u007F                   hex character code (exactly four digits)
+    \\u{7F}                   hex codepoint (any length)
+    \\U0000007F               hex character code (exactly eight digits)
+    \\U{7F}                   hex codepoint (any length)
+    \\p{Letter}               Unicode character class
+    \\P{Letter}               negated Unicode character class
+    \\d \\s \\w               Perl character class
+    \\D \\S \\W               negated Perl character class
 
 ### Perl character classes (Unicode friendly)
 
-    \d    digit (\p{Nd})
-    \D    not digit
-    \s    whitespace (\p{White_Space})
-    \S    not whitespace
-    \w    word character
-    \W    not word character
+    \\d    digit (\\p{Nd})
+    \\D    not digit
+    \\s    whitespace (\\p{White_Space})
+    \\S    not whitespace
+    \\w    word character
+    \\W    not word character
 
 ### ASCII character classes
 
@@ -195,7 +189,7 @@ case-insensitively and `b` case-sensitively.
     [[:lower:]]    [a-z]
     [[:print:]]    [ -~]
     [[:punct:]]    [!-/:-@\[-`{-~]
-    [[:space:]]    [\t\n\v\f\r ]
+    [[:space:]]    [\\t\\n\\v\\f\\r ]
     [[:upper:]]    [A-Z]
     [[:word:]]     [0-9A-Za-z_]
     [[:xdigit:]]   [0-9A-Fa-f]
@@ -225,13 +219,13 @@ error, instead being parsed as nested quantifiers.
 
 - Callouts: `(?C...)`
 
-- `\K` (reset match start)
+- `\\K` (reset match start)
 
-- `\G` (match at previous match end)
+- `\\G` (match at previous match end)
 
-- `\R` (any newline sequence)
+- `\\R` (any newline sequence)
 
-- `\X` (extended grapheme cluster)
+- `\\X` (extended grapheme cluster)
 
 If you need these, use base **R**, `stringi`, or `stringr`.
 

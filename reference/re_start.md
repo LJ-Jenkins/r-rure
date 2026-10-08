@@ -3,7 +3,7 @@
 This page describes the `start` argument in rure. `start` controls the
 byte position at which the regular expression engine begins searching.
 
-It is a **1-based byte offset**, matching R's usual string-indexing
+It is a **1-based byte offset**, matching R's usual indexing
 conventions. The default, `start = 1L`, begins at the first byte. The
 valid range is `1 <= start <= nbytes(string) + 1`. Values less than `1`
 raise an error; values greater than this range produce no match (`FALSE`
@@ -17,24 +17,25 @@ fails, it tries at byte `start + 1`; and so on.
 
 `start` is **not** equivalent to slicing the string. The engine receives
 the full string and may inspect bytes before `start` to evaluate anchors
-and other zero-width assertions. For example, `\b` at position `start`
-inspects the byte at `start - 1` to decide whether a word boundary
-exists there.
+and other zero-width assertions. For example, `"\\b"` at position
+`start` inspects the byte at `start - 1` to decide whether a word
+boundary exists there.
 
 ## Anchors
 
 Because the search begins at `start` and moves forward:
 
-- `^` and `\A` assert the start of the string (byte 1, or after a
+- `"^"` and `"\\A"` assert the start of the string (byte 1, or after a
   newline with multi-line mode). Since the search cannot move backwards,
-  **only `start = 1L`** can find a match anchored with `^` or `\A`.
+  **only `start = 1L`** can find a match anchored with `"^"` or `"\\A"`.
 
-- `$` and `\z` assert the end of the string (byte `nbytes(string) + 1`,
-  or before a newline with multi-line mode). Since the search moves
-  forward to the end, **any `start <= nbytes(string) + 1`** can find a
-  match anchored with `$` or `\z`.
+- `"$"` and `"\\z"` assert the end of the string (byte
+  `nbytes(string) + 1`, or before a newline with multi-line mode). Since
+  the search moves forward to the end, **any
+  `start <= nbytes(string) + 1`** can find a match anchored with `"$"`
+  or `"\\z"`.
 
-- `\b` asserts a word boundary at the current position. Any `start`
+- `"\\b"` asserts a word boundary at the current position. Any `start`
   whose suffix contains a word boundary can find a match.
 
 ## Boundaries
