@@ -5,6 +5,7 @@
 
 <!-- badges: start -->
 
+[![R-CMD-check](https://github.com/LJ-Jenkins/r-rure/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/LJ-Jenkins/r-rure/actions/workflows/R-CMD-check.yaml)
 <!-- badges: end -->
 
 (R-) rure provides high-performance regex operations using the Rust

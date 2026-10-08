@@ -16,6 +16,7 @@ knitr::opts_chunk$set(
 # r-rure <img src="man/figures/logo.png" align="right" height="120" alt="" />
 
 <!-- badges: start -->
+[![R-CMD-check](https://github.com/LJ-Jenkins/r-rure/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/LJ-Jenkins/r-rure/actions/workflows/R-CMD-check.yaml)
 <!-- badges: end -->
 
 (R-) rure provides high-performance regex operations using the Rust [regex crate](https://github.com/rust-lang/regex) (through the [rure C API](https://github.com/rust-lang/regex/tree/master/regex-capi)).
