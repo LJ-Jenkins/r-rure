@@ -20,16 +20,11 @@ Notable differences are described below.
 \strong{not a valid pattern} and will raise an error, even though the
 underlying engine accepts it.
 
-The reason is that rure uses \code{regex::bytes}, under which the empty
-pattern matches at \strong{every byte offset}, including positions that
-split a multi-byte UTF-8 codepoint. For a 4-byte emoji,
-\code{re_find_all()} with an empty pattern would return 5 matches, at
-byte offsets 0, 1, 2, 3, and 4. Rejecting \code{""} avoids this class of
-surprising output.
-
-If you want to match the empty string at every position, use
-\code{".*"}, \code{".?"}, or \code{"(?:)"}. If you want a pattern that matches
-\strong{nothing}, use \code{"[a&&b]"}, an empty character class.
+The empty pattern could be passed within a variable in error, so
+rure explicitly disallows it and instead enforces that
+matching the empty string must be done explicitly with a non-empty
+pattern such as \code{".*"}, \code{".?"}, or \code{"(?:)"}. For a pattern that
+matches nothing, use \code{"[a&&b]"}.
 }
 
 \section{Regex semantics}{
@@ -39,25 +34,25 @@ ways:
 \itemize{
 \item \strong{No backtracking.} The engine is a finite automaton, not a
 backtracking matcher. It runs in time linear in the input length,
-but \strong{backreferences} (\verb{\\1}, \verb{\\2}, ...) and \strong{look-around}
-(\verb{(?=...)}, \code{(?!...)}, \verb{(?<=...)}, \verb{(?<!...)}) are \strong{not
+but \strong{backreferences} (\code{"\\1"}, \code{"\\2"}, ...) and \strong{look-around}
+(\code{"(?=...)"}, \code{"(?!...)"}, \code{"(?<=...)"}, \code{"(?<!...)"}) are \strong{not
 supported}. Attempting to use them raises an error.
 \item \strong{Leftmost-first, not leftmost-longest.} Among matches starting
 at the same position, the engine prefers the first branch of an
 alternation that matches, not the longest overall match. For
 example, \code{"sam|samwise"} matches \code{"sam"} in \code{"samwise"}, while
 \code{"samwise|sam"} matches \code{"samwise"}.
-\item \strong{Unicode by default.} \verb{\\w}, \verb{\\d}, \verb{\\s}, and \code{.} operate on
-Unicode codepoints, not bytes. \verb{\\w} matches any Unicode word
-character (\verb{\\p\{Alphabetic\}} plus \verb{\\p\{M\}}, \verb{\\d}, \verb{\\p\{Pc\}}, and
-\verb{\\p\{Join_Control\}}), not just \verb{[A-Za-z0-9_]}. \code{.} does not match
+\item \strong{Unicode by default.} \code{"\\\\w"}, \code{"\\\\d"}, \code{"\\\\s"}, and \code{"."} operate on
+Unicode codepoints, not bytes. \code{"\\\\w"} matches any Unicode word
+character (\code{"\\\\p{Alphabetic}"} plus \code{"\\\\p{M}"}, \code{"\\\\d"}, \code{"\\\\p{Pc}"}, and
+\code{"\\\\p{Join_Control}"}), not just \code{"[A-Za-z0-9_]"}. \code{"."} does not match
 newline unless the \code{s} flag is set.
 \item \strong{Byte-level matching is available.} Disabling Unicode with
-\code{(?-u:...)} makes \code{.} match a single byte and allows patterns
+\code{"(?-u:...)"} makes \code{"."} match a single byte and allows patterns
 that would otherwise split codepoints.
 \item \strong{Every search is implicitly anchored to "anywhere in the
 string".} The engine finds the leftmost match anywhere in the
-haystack. Use \code{^} / \verb{\\A} and \code{$} / \verb{\\z} to anchor to the whole
+haystack. Use \code{"^"} / \code{"\\\\A"} and \code{"$"} / \code{"\\\\z"} to anchor to the whole
 string (see \link{re_start} for how \code{start} interacts with anchors).
 }
 }
@@ -89,11 +84,11 @@ and UTF-8 is more useful still. Other text encodings are not supported.
 
 \if{html}{\out{<div class="sourceCode r">}}\preformatted{.             any character except new line (any character with s flag)
 [0-9]         any ASCII digit
-\\d            digit (\\p\{Nd\})
-\\D            not digit
-\\p\{Greek\}     Unicode character class (general category or script)
-\\pX           Unicode character class, one-letter name
-\\P\{Greek\}     negated Unicode character class
+\\\\d           digit (\\p\{Nd\})
+\\\\D           not digit
+\\\\p\{Greek\}    Unicode character class (general category or script)
+\\\\pX          Unicode character class, one-letter name
+\\\\P\{Greek\}    negated Unicode character class
 }\if{html}{\out{</div>}}
 }
 
@@ -109,7 +104,7 @@ and UTF-8 is more useful still. Other text encodings are not supported.
 [0-9&&[^4]]   subtraction via intersection and negation
 [0-9--4]      direct subtraction
 [a-g~~b-h]    symmetric difference
-[\[\]]        escaping inside a character class
+[\\\[\\\]]      escaping inside a character class
 [a&&b]        empty class, matches nothing
 }\if{html}{\out{</div>}}
 }
@@ -123,9 +118,9 @@ x|y           alternation (prefer x)
 
 \subsection{Repetitions}{
 
-\if{html}{\out{<div class="sourceCode r">}}\preformatted{x*  x+  x?          greedy
-x*? x+? x??         ungreedy / lazy
-x\{n,m\} x\{n,\} x\{n\}   greedy with bounds
+\if{html}{\out{<div class="sourceCode r">}}\preformatted{x*  x+  x?           greedy
+x*? x+? x??          ungreedy / lazy
+x\{n,m\} x\{n,\} x\{n\}    greedy with bounds
 x\{n,m\}? x\{n,\}? x\{n\}? ungreedy with bounds
 }\if{html}{\out{</div>}}
 }
@@ -134,12 +129,12 @@ x\{n,m\}? x\{n,\}? x\{n\}? ungreedy with bounds
 
 \if{html}{\out{<div class="sourceCode r">}}\preformatted{^                start of haystack (or line, with m flag)
 $                end of haystack (or line, with m flag)
-\\A               start of haystack (even with m flag)
-\\z               end of haystack (even with m flag)
-\\b               Unicode word boundary
-\\B               not a word boundary
-\\b\{start\}, \\<    start-of-word boundary
-\\b\{end\},   \\>    end-of-word boundary
+\\\\A              start of haystack (even with m flag)
+\\\\z              end of haystack (even with m flag)
+\\\\b              Unicode word boundary
+\\\\B              not a word boundary
+\\\\b\{start\}, \\\\<  start-of-word boundary
+\\\\b\{end\},   \\\\>  end-of-word boundary
 }\if{html}{\out{</div>}}
 }
 
@@ -174,31 +169,31 @@ Flags can be set and cleared inline, e.g. \code{"(?i)a+(?-i)b+"} matches
 
 \subsection{Escape sequences}{
 
-\if{html}{\out{<div class="sourceCode r">}}\preformatted{\\*              literal * (works for any ASCII punctuation)
-\\a \\f \\t \\n \\r \\v   control characters
-\\A \\z \\b \\B     anchors and boundaries
-\\123            octal character code (up to three digits)
-\\x7F            hex character code (exactly two digits)
-\\x\{10FFFF\}      hex codepoint (any length)
-\\u007F          hex character code (exactly four digits)
-\\u\{7F\}          hex codepoint (any length)
-\\U0000007F      hex character code (exactly eight digits)
-\\U\{7F\}          hex codepoint (any length)
-\\p\{Letter\}      Unicode character class
-\\P\{Letter\}      negated Unicode character class
-\\d \\s \\w        Perl character class
-\\D \\S \\W        negated Perl character class
+\if{html}{\out{<div class="sourceCode r">}}\preformatted{\\\\*                       literal * (works for any ASCII punctuation)
+\\\\a \\\\f \\\\t \\\\n \\\\r \\\\v   control characters
+\\\\A \\\\z \\\\b \\\\B           anchors and boundaries
+\\\\123                     octal character code (up to three digits)
+\\\\x7F                     hex character code (exactly two digits)
+\\\\x\{10FFFF\}               hex codepoint (any length)
+\\\\u007F                   hex character code (exactly four digits)
+\\\\u\{7F\}                   hex codepoint (any length)
+\\\\U0000007F               hex character code (exactly eight digits)
+\\\\U\{7F\}                   hex codepoint (any length)
+\\\\p\{Letter\}               Unicode character class
+\\\\P\{Letter\}               negated Unicode character class
+\\\\d \\\\s \\\\w               Perl character class
+\\\\D \\\\S \\\\W               negated Perl character class
 }\if{html}{\out{</div>}}
 }
 
 \subsection{Perl character classes (Unicode friendly)}{
 
-\if{html}{\out{<div class="sourceCode r">}}\preformatted{\\d    digit (\\p\{Nd\})
-\\D    not digit
-\\s    whitespace (\\p\{White_Space\})
-\\S    not whitespace
-\\w    word character
-\\W    not word character
+\if{html}{\out{<div class="sourceCode r">}}\preformatted{\\\\d    digit (\\\\p\{Nd\})
+\\\\D    not digit
+\\\\s    whitespace (\\\\p\{White_Space\})
+\\\\S    not whitespace
+\\\\w    word character
+\\\\W    not word character
 }\if{html}{\out{</div>}}
 }
 
@@ -214,7 +209,7 @@ Flags can be set and cleared inline, e.g. \code{"(?i)a+(?-i)b+"} matches
 [[:lower:]]    [a-z]
 [[:print:]]    [ -~]
 [[:punct:]]    [!-/:-@\[-`\{-~]
-[[:space:]]    [\\t\\n\\v\\f\\r ]
+[[:space:]]    [\\\\t\\\\n\\\\v\\\\f\\\\r ]
 [[:upper:]]    [A-Z]
 [[:word:]]     [0-9A-Za-z_]
 [[:xdigit:]]   [0-9A-Fa-f]
@@ -237,10 +232,10 @@ typically error, instead being parsed as nested quantifiers.
 \item Recursion: \code{(?0)}
 \item Subroutine calls: \verb{(?&name)}
 \item Callouts: \code{(?C...)}
-\item \verb{\\K} (reset match start)
-\item \verb{\\G} (match at previous match end)
-\item \verb{\\R} (any newline sequence)
-\item \verb{\\X} (extended grapheme cluster)
+\item \verb{\\\\K} (reset match start)
+\item \verb{\\\\G} (match at previous match end)
+\item \verb{\\\\R} (any newline sequence)
+\item \verb{\\\\X} (extended grapheme cluster)
 }
 
 If you need these, use base \strong{R}, \code{stringi}, or \code{stringr}.

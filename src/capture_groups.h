@@ -1,4 +1,4 @@
-#ifndef _CAPTRUE_GROUPS_H
+#ifndef _CAPTURE_GROUPS_H
 #define _CAPTURE_GROUPS_H
 
 #include <R.h>

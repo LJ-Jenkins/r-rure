@@ -18,16 +18,11 @@
 #' **not a valid pattern** and will raise an error, even though the
 #' underlying engine accepts it.
 #'
-#' The reason is that rure uses `regex::bytes`, under which the empty
-#' pattern matches at **every byte offset**, including positions that
-#' split a multi-byte UTF-8 codepoint. For a 4-byte emoji,
-#' `re_find_all()` with an empty pattern would return 5 matches, at
-#' byte offsets 0, 1, 2, 3, and 4. Rejecting `""` avoids this class of
-#' surprising output.
-#'
-#' If you want to match the empty string at every position, use
-#' `".*"`, `".?"`, or `"(?:)"`. If you want a pattern that matches
-#' **nothing**, use `"[a&&b]"`, an empty character class.
+#' The empty pattern could be passed within a variable in error, so
+#' rure explicitly disallows it and instead enforces that
+#' matching the empty string must be done explicitly with a non-empty
+#' pattern such as `".*"`, `".?"`, or `"(?:)"`. For a pattern that
+#' matches nothing, use `"[a&&b]"`.
 #'
 #' # Regex semantics
 #'
@@ -37,8 +32,8 @@
 #'
 #' * **No backtracking.** The engine is a finite automaton, not a
 #'   backtracking matcher. It runs in time linear in the input length,
-#'   but **backreferences** (`\1`, `\2`, ...) and **look-around**
-#'   (`(?=...)`, `(?!...)`, `(?<=...)`, `(?<!...)`) are **not
+#'   but **backreferences** (`"\1"`, `"\2"`, ...) and **look-around**
+#'   (`"(?=...)"`, `"(?!...)"`, `"(?<=...)"`, `"(?<!...)"`) are **not
 #'   supported**. Attempting to use them raises an error.
 #'
 #' * **Leftmost-first, not leftmost-longest.** Among matches starting
@@ -47,19 +42,19 @@
 #'   example, `"sam|samwise"` matches `"sam"` in `"samwise"`, while
 #'   `"samwise|sam"` matches `"samwise"`.
 #'
-#' * **Unicode by default.** `\w`, `\d`, `\s`, and `.` operate on
-#'   Unicode codepoints, not bytes. `\w` matches any Unicode word
-#'   character (`\p{Alphabetic}` plus `\p{M}`, `\d`, `\p{Pc}`, and
-#'   `\p{Join_Control}`), not just `[A-Za-z0-9_]`. `.` does not match
+#' * **Unicode by default.** `"\\w"`, `"\\d"`, `"\\s"`, and `"."` operate on
+#'   Unicode codepoints, not bytes. `"\\w"` matches any Unicode word
+#'   character (`"\\p{Alphabetic}"` plus `"\\p{M}"`, `"\\d"`, `"\\p{Pc}"`, and
+#'   `"\\p{Join_Control}"`), not just `"[A-Za-z0-9_]"`. `"."` does not match
 #'   newline unless the `s` flag is set.
 #'
 #' * **Byte-level matching is available.** Disabling Unicode with
-#'   `(?-u:...)` makes `.` match a single byte and allows patterns
+#'   `"(?-u:...)"` makes `"."` match a single byte and allows patterns
 #'   that would otherwise split codepoints.
 #'
 #' * **Every search is implicitly anchored to "anywhere in the
 #'   string".** The engine finds the leftmost match anywhere in the
-#'   haystack. Use `^` / `\A` and `$` / `\z` to anchor to the whole
+#'   haystack. Use `"^"` / `"\\A"` and `"$"` / `"\\z"` to anchor to the whole
 #'   string (see [re_start] for how `start` interacts with anchors).
 #'
 #' # Encoding and byte semantics
@@ -91,11 +86,11 @@
 #' ```r
 #' .             any character except new line (any character with s flag)
 #' [0-9]         any ASCII digit
-#' \d            digit (\p{Nd})
-#' \D            not digit
-#' \p{Greek}     Unicode character class (general category or script)
-#' \pX           Unicode character class, one-letter name
-#' \P{Greek}     negated Unicode character class
+#' \\d           digit (\p{Nd})
+#' \\D           not digit
+#' \\p{Greek}    Unicode character class (general category or script)
+#' \\pX          Unicode character class, one-letter name
+#' \\P{Greek}    negated Unicode character class
 #' ```
 #'
 #' ## Character classes
@@ -111,7 +106,7 @@
 #' [0-9&&[^4]]   subtraction via intersection and negation
 #' [0-9--4]      direct subtraction
 #' [a-g~~b-h]    symmetric difference
-#' [\[\]]        escaping inside a character class
+#' [\\[\\]]      escaping inside a character class
 #' [a&&b]        empty class, matches nothing
 #' ```
 #'
@@ -125,9 +120,9 @@
 #' ## Repetitions
 #'
 #' ```r
-#' x*  x+  x?          greedy
-#' x*? x+? x??         ungreedy / lazy
-#' x{n,m} x{n,} x{n}   greedy with bounds
+#' x*  x+  x?           greedy
+#' x*? x+? x??          ungreedy / lazy
+#' x{n,m} x{n,} x{n}    greedy with bounds
 #' x{n,m}? x{n,}? x{n}? ungreedy with bounds
 #' ```
 #'
@@ -136,12 +131,12 @@
 #' ```r
 #' ^                start of haystack (or line, with m flag)
 #' $                end of haystack (or line, with m flag)
-#' \A               start of haystack (even with m flag)
-#' \z               end of haystack (even with m flag)
-#' \b               Unicode word boundary
-#' \B               not a word boundary
-#' \b{start}, \<    start-of-word boundary
-#' \b{end},   \>    end-of-word boundary
+#' \\A              start of haystack (even with m flag)
+#' \\z              end of haystack (even with m flag)
+#' \\b              Unicode word boundary
+#' \\B              not a word boundary
+#' \\b{start}, \\<  start-of-word boundary
+#' \\b{end},   \\>  end-of-word boundary
 #' ```
 #'
 #' ## Grouping and flags
@@ -177,31 +172,31 @@
 #' ## Escape sequences
 #'
 #' ```r
-#' \*              literal * (works for any ASCII punctuation)
-#' \a \f \t \n \r \v   control characters
-#' \A \z \b \B     anchors and boundaries
-#' \123            octal character code (up to three digits)
-#' \x7F            hex character code (exactly two digits)
-#' \x{10FFFF}      hex codepoint (any length)
-#' \u007F          hex character code (exactly four digits)
-#' \u{7F}          hex codepoint (any length)
-#' \U0000007F      hex character code (exactly eight digits)
-#' \U{7F}          hex codepoint (any length)
-#' \p{Letter}      Unicode character class
-#' \P{Letter}      negated Unicode character class
-#' \d \s \w        Perl character class
-#' \D \S \W        negated Perl character class
+#' \\*                       literal * (works for any ASCII punctuation)
+#' \\a \\f \\t \\n \\r \\v   control characters
+#' \\A \\z \\b \\B           anchors and boundaries
+#' \\123                     octal character code (up to three digits)
+#' \\x7F                     hex character code (exactly two digits)
+#' \\x{10FFFF}               hex codepoint (any length)
+#' \\u007F                   hex character code (exactly four digits)
+#' \\u{7F}                   hex codepoint (any length)
+#' \\U0000007F               hex character code (exactly eight digits)
+#' \\U{7F}                   hex codepoint (any length)
+#' \\p{Letter}               Unicode character class
+#' \\P{Letter}               negated Unicode character class
+#' \\d \\s \\w               Perl character class
+#' \\D \\S \\W               negated Perl character class
 #' ```
 #'
 #' ## Perl character classes (Unicode friendly)
 #'
 #' ```r
-#' \d    digit (\p{Nd})
-#' \D    not digit
-#' \s    whitespace (\p{White_Space})
-#' \S    not whitespace
-#' \w    word character
-#' \W    not word character
+#' \\d    digit (\\p{Nd})
+#' \\D    not digit
+#' \\s    whitespace (\\p{White_Space})
+#' \\S    not whitespace
+#' \\w    word character
+#' \\W    not word character
 #' ```
 #'
 #' ## ASCII character classes
@@ -217,7 +212,7 @@
 #' [[:lower:]]    [a-z]
 #' [[:print:]]    [ -~]
 #' [[:punct:]]    [!-/:-@\[-`{-~]
-#' [[:space:]]    [\t\n\v\f\r ]
+#' [[:space:]]    [\\t\\n\\v\\f\\r ]
 #' [[:upper:]]    [A-Z]
 #' [[:word:]]     [0-9A-Za-z_]
 #' [[:xdigit:]]   [0-9A-Fa-f]
@@ -239,10 +234,10 @@
 #' * Recursion: `(?0)`
 #' * Subroutine calls: `(?&name)`
 #' * Callouts: `(?C...)`
-#' * `\K` (reset match start)
-#' * `\G` (match at previous match end)
-#' * `\R` (any newline sequence)
-#' * `\X` (extended grapheme cluster)
+#' * `\\K` (reset match start)
+#' * `\\G` (match at previous match end)
+#' * `\\R` (any newline sequence)
+#' * `\\X` (extended grapheme cluster)
 #'
 #' If you need these, use base **R**, `stringi`, or `stringr`.
 #'
@@ -320,7 +315,7 @@ NULL
 #' the byte position at which the regular expression engine begins
 #' searching.
 #'
-#' It is a **1-based byte offset**, matching R's usual string-indexing
+#' It is a **1-based byte offset**, matching R's usual indexing
 #' conventions. The default, `start = 1L`, begins at the first byte.
 #' The valid range is `1 <= start <= nbytes(string) + 1`. Values less
 #' than `1` raise an error; values greater than this range produce no
@@ -334,7 +329,7 @@ NULL
 #'
 #' `start` is **not** equivalent to slicing the string. The engine
 #' receives the full string and may inspect bytes before `start` to
-#' evaluate anchors and other zero-width assertions. For example, `\b`
+#' evaluate anchors and other zero-width assertions. For example, `"\\b"`
 #' at position `start` inspects the byte at `start - 1` to decide
 #' whether a word boundary exists there.
 #'
@@ -342,18 +337,18 @@ NULL
 #'
 #' Because the search begins at `start` and moves forward:
 #'
-#' * `^` and `\A` assert the start of the string (byte 1, or after a
+#' * `"^"` and `"\\A"` assert the start of the string (byte 1, or after a
 #'   newline with multi-line mode). Since the search cannot move
 #'   backwards, **only `start = 1L`** can find a match anchored with
-#'   `^` or `\A`.
+#'   `"^"` or `"\\A"`.
 #'
-#' * `$` and `\z` assert the end of the string (byte
+#' * `"$"` and `"\\z"` assert the end of the string (byte
 #'   `nbytes(string) + 1`, or before a newline with multi-line mode).
 #'   Since the search moves forward to the end, **any
 #'   `start <= nbytes(string) + 1`** can find a match anchored with
-#'   `$` or `\z`.
+#'   `"$"` or `"\\z"`.
 #'
-#' * `\b` asserts a word boundary at the current position. Any `start`
+#' * `"\\b"` asserts a word boundary at the current position. Any `start`
 #'   whose suffix contains a word boundary can find a match.
 #'
 #' # Boundaries

@@ -20,8 +20,6 @@ knitr::opts_chunk$set(
 
 (R-) rure provides high-performance regex operations using the Rust [regex crate](https://github.com/rust-lang/regex) (through the [rure C API](https://github.com/rust-lang/regex/tree/master/regex-capi)).
 
-- **NOTE:** This package is in development and is subject to significant change.
-
 From the rure docs:
 
 * rure is a C API to Rust's regex library, which guarantees linear time searching using finite automata. In exchange, it must give up some common regex features such as backreferences and arbitrary lookaround. It does however include capturing groups, lazy matching, Unicode support and word boundary assertions. Its matching semantics generally correspond to Perl's, or "leftmost first." Namely, the match locations reported correspond to the first match that would be found by a backtracking engine.

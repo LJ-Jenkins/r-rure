@@ -418,7 +418,7 @@ test_that("conditionals are rejected", {
   expect_true(errors("(?(1)a|b)"))
 })
 
-test_that("recursion is rejected", {
+test_that("NUL is rejected", {
   expect_true(errors("(?0)"))
 })
 

@@ -8,7 +8,11 @@
 \description{
 \if{html}{\figure{logo.png}{options: style='float: right' alt='logo' width='120'}}
 
-Provides bindings to the 'Rust' 'regex' crate through the 'rure' C API, giving access to high-performance regular expression operations for 'UTF-8' compliant patterns. The 'regex' crate guarantees linear time searching using finite automata. In exchange, it does not include some common regex features such as backreferences and arbitrary lookaround. However, it does include capturing groups, lazy matching, 'Unicode' support and word boundary assertions. Matching semantics generally correspond to 'Perl', or "leftmost first". Namely, the match locations reported correspond to the first match that would be found by a backtracking engine.
+Provides bindings to the 'Rust' 'regex' crate through the 'rure' C API, giving access to high-performance regular expression operations for 'UTF-8' compliant patterns. The 'regex' crate guarantees linear time searching using finite automata. In exchange, it does not include some common regex features such as backreferences and arbitrary lookaround. However, it does include capturing groups, lazy matching, 'Unicode' support and word boundary assertions. Matching semantics generally correspond to 'Perl', or 'leftmost first'. Namely, the match locations reported correspond to the first match that would be found by a backtracking engine.
+}
+\note{
+For detailed guidance about rure semantics, see the help for
+\link[=re_pattern]{patterns} and the \link[=re_start]{start} parameter.
 }
 \seealso{
 Useful links:

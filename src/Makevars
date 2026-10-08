@@ -2,7 +2,7 @@ LIBDIR = rurerlib/target/release
 STATLIB = $(LIBDIR)/librurerlib.a
 PKG_CFLAGS = -pthread
 PKG_CPPFLAGS = -DSTRICT_R_HEADERS -DR_NO_REMAP
-PKG_LIBS = -L$(LIBDIR) -lrurerlib -pthread
+PKG_LIBS = -L$(LIBDIR) -lrurerlib
 
 all: cleanup
 

@@ -8,7 +8,7 @@ This page describes the \code{start} argument in rure. \code{start} controls
 the byte position at which the regular expression engine begins
 searching.
 
-It is a \strong{1-based byte offset}, matching R's usual string-indexing
+It is a \strong{1-based byte offset}, matching R's usual indexing
 conventions. The default, \code{start = 1L}, begins at the first byte.
 The valid range is \verb{1 <= start <= nbytes(string) + 1}. Values less
 than \code{1} raise an error; values greater than this range produce no
@@ -21,7 +21,7 @@ that fails, it tries at byte \code{start + 1}; and so on.
 
 \code{start} is \strong{not} equivalent to slicing the string. The engine
 receives the full string and may inspect bytes before \code{start} to
-evaluate anchors and other zero-width assertions. For example, \verb{\\b}
+evaluate anchors and other zero-width assertions. For example, \code{"\\\\b"}
 at position \code{start} inspects the byte at \code{start - 1} to decide
 whether a word boundary exists there.
 }
@@ -29,16 +29,16 @@ whether a word boundary exists there.
 \section{Anchors}{
 Because the search begins at \code{start} and moves forward:
 \itemize{
-\item \code{^} and \verb{\\A} assert the start of the string (byte 1, or after a
+\item \code{"^"} and \code{"\\\\A"} assert the start of the string (byte 1, or after a
 newline with multi-line mode). Since the search cannot move
 backwards, \strong{only \code{start = 1L}} can find a match anchored with
-\code{^} or \verb{\\A}.
-\item \code{$} and \verb{\\z} assert the end of the string (byte
+\code{"^"} or \code{"\\\\A"}.
+\item \code{"$"} and \code{"\\\\z"} assert the end of the string (byte
 \code{nbytes(string) + 1}, or before a newline with multi-line mode).
 Since the search moves forward to the end, \strong{any
 \code{start <= nbytes(string) + 1}} can find a match anchored with
-\code{$} or \verb{\\z}.
-\item \verb{\\b} asserts a word boundary at the current position. Any \code{start}
+\code{"$"} or \code{"\\\\z"}.
+\item \code{"\\\\b"} asserts a word boundary at the current position. Any \code{start}
 whose suffix contains a word boundary can find a match.
 }
 }
