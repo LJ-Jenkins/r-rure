@@ -1,4 +1,4 @@
-LIBDIR = rurerlib/target/release
+LIBDIR = rurerlib/target/$(TARGET)/release
 STATLIB = $(LIBDIR)/librurerlib.a
 PKG_CFLAGS = -pthread
 PKG_CPPFLAGS = -DSTRICT_R_HEADERS -DR_NO_REMAP
