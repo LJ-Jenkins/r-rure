@@ -8,6 +8,7 @@ src/*.a
 src/rurerlib/target/*
 src/rurerlib/vendor.tar.xz
 src/rurerlib/vendor/*
+inst/AUTHORS
+README_cache
 src/vendor/*
-docs
-README_cache/*
+docs/

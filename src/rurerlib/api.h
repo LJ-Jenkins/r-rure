@@ -1,9 +1,5 @@
 #include <stdint.h>
 
-// #define STRIP_OK 0
-// #define STRIP_NO_MATCH 1
-// #define STRIP_ERROR 2
-
 #ifdef __cplusplus
 extern "C"
 {

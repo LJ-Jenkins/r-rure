@@ -1,7 +1,9 @@
-LIBDIR = rurerlib/target/$(TARGET)/release
+LIBDIR = rurerlib/target/release
 STATLIB = $(LIBDIR)/librurerlib.a
 PKG_CFLAGS = -pthread
 PKG_CPPFLAGS = -DSTRICT_R_HEADERS -DR_NO_REMAP
+
+# Using -pthread in PKG_LIBS fails on emscripten (2026)
 PKG_LIBS = -L$(LIBDIR) -lrurerlib
 
 all: cleanup
